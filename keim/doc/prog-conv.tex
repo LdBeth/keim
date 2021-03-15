@@ -1,0 +1,159 @@
+\chapter{Conventions for programming \keim}
+
+Since {\sc Common Lisp} does not have a rigid type system the $\Omega$ group has enacted a standard for
+programming \keim\ in order to keep up the quality of the code.
+\section{Naming Conventions}
+\label{naming-conventions}
+\begin{enumerate}
+\item Each module has a short name  {\tt <<Ext>>}, of 2-4 letters or digits
+beginning with a letter.
+This name is prefixed to all functions, defstructs, classes, generic
+functions and variables.
+\item Names for {\em interface-functions} are of the form  {\tt
+<<Ext>>${}\sim{}$<<Name>>}. 
+\item Names for {\em internal functions} are of the form {\tt
+<<Ext>>=<<Name>>}, internal functions may only be used in the
+corresponding module.
+\item Functions, that are only used for debugging and testing the implementation
+have names of the form {\tt <<Ext>>==<<Name>>}, these functions
+must not be used by other functions.
+\item {\tt internal variables} have names of the form  {\tt
+<<Ext>>*<<Name>>}, note that there are no external variables.
+\item Names for defined datatypes, such as CLOS defclasses, defstructs, and
+ have the form {\tt <<Ext>>+<<Name>>} if they are to be exported and used 
+in external modules and {\tt <<Ext>>$=$<<Name>>} if they are only for internal
+use.
+\item Names {\tt <<Name>>} are non-empty identifiers that
+can be made from several parts composed
+by the letter "{\tt -}"; the parts consist only of letters and digits: 
+
+{\tt <<Name1>>-<<Name2>>-$\ldots$-<<Name$n$>>}. 
+\item Predicates, functions that should be used only to return a Boolean value
+of T or nil, should always be named with a {\tt -p} at the end, e.g., 
+{\tt keim${}\sim{}$foo-p}.
+\item Functions that are auxiliary functions (that is, they should never be called
+directly, rather only through some top-level function), yet must be available
+as generic functions in order for new modules to specialize on them, have
+names of the following form: {\tt <<Ext>>$\sim=$<<Name>>}.
+\item Property names (used on property lists of symbols or terms) should be of the form {\tt <<Ext>>$=$<<Name>>-PROP} for those internal to a module, or
+{\tt <<Ext>>$\sim$<<Name>>-PROP} for those which are external.
+\end{enumerate}
+
+\section{Module Conventions}
+\label{module-conventions}
+
+Before a new module is generated it has to be discussed in the
+\keim-group. If it is accepted the corresponding file-name is added to
+the {\bf boot} file.  In the {\bf boot} file all files used in \keim\
+are listed. They have to be generated with {\tt make-pathname}. The
+sequence of the files corresponds to the sequence of loading the files.
+Thereby it is assured that adaptions of pathnames to different
+machines or Lisps dialects can be done by editing one single file.
+Furthermore the whole system structure is mirrored in this file.
+
+In order to get a simple and clearly structured system, the following
+conventions must be observed:
+
+\begin{itemize}
+\item ``one file -- one module''. That is we have a one-to-one
+correspondence of files and modules. If it is possible to split a
+module in different files, it must be possible to generate different
+modules.
+
+\item The whole module structure is strictly hierarchical, that means
+it has the form of a DAG. Thereby it is possible to load and compile
+the whole system without any difficulties. The logical structure is
+obvious.
+
+\item The maximal size of module is 100k compiled code (comments are
+not limited, therefore compiled code), compiled on Sparc under Lucid
+with default compiler options. Thereby it is guaranteed that modules
+are not too big, that they can be compiled with sufficiently small
+expense, ...
+
+\item In no file -- exept the boot file -- it is allowed to load
+another file.
+
+\item Every file must begin with {\tt (in-package "KEIM")}. In the
+next line there must be a statement of the following form:
+\begin{verbatim}
+(mod~defmod A :uses (B C D)
+              :documentation "This module is ...."
+	      :exports (A~X A~Y))
+\end{verbatim}
+
+\item In every module {\tt A} only classes, interface functions,
+internal functions or variables beginning with the module prefix (cp.\
+naming conventions) may be defined ({\tt A+, A$\sim{}$, A*, A=}).
+Furthermore it is possible to define methods for classes defined in an
+imported module. That is, in the example above it is possible to
+define:
+\begin{verbatim}
+(defmethod B~blabla ...)
+\end{verbatim}
+
+\item In every module {\tt A} variables and internal functions only of
+this module may be used. In it may be used classes and interface
+functions only of the module {\tt A} itself or modules imported by the
+{\tt :uses}-command in the {\tt mod~defmod}-statement at the beginning
+of the module.  Furthermore all standard \lisp-symbols can be used.
+
+\end{itemize}
+
+There will be \keim-functions for loading, compiling and loading the
+system as well as for checking whether the conventions are observed.
+The {\tt keim$\sim$-check-modules} function has to guarantee:
+
+\begin{itemize}
+\item On every module specified by the list of files in the boot file
+there is an ``(in-package "KEIM")'' statement. On every module is a
+{\tt mod~defmod} statement. Only the first is considered.
+
+\item The module structure defined by the {\tt mod~defmod} statements
+must be a DAG.
+
+\item There is no {\tt load} statement in the modules. 
+
+\item In every module only symbols begining with the module prefix are
+defined. The only exception to this rule is the {\tt defmethod}-form,
+which is needed to specialize the behaviour of methods inherited from
+superclasses to those defined in the module. {\tt defmethod} may only
+be used on generic functions from modules that the module explicity
+imports.  
+
+Whether a function is defined as an interface function or
+as an internal function cannot be checked.
+
+\item In every module only the allowed symbols are used.
+
+\item The maximum size of modules is not checked.
+
+\end{itemize}
+
+
+\section{Documentation}
+\begin{enumerate}
+\item The {\tt defgeneric} form is supposed to contain all interface
+      information (input, values effect,...) that is relevant to the user.
+\item The {\tt defmethod} form should contain only internal
+      information, all information relevant to the user should be in the
+      {\tt defgeneric} form. the {\tt extract documentation} does not
+      consider documentation in the {\tt defmethod} form.
+\item For each method implicitly defined in the {\tt defclass} form there has to be a {\tt defgeneric}
+      form with the documentation. Otherwise the accessor methods will not appear in the index 
+      or the documentation.
+\end{enumerate}
+
+\section{Term Classes and Mixins}
+{\keim} exports a hierarchy of general terms. From this the user can
+tailor his own concept of terms by appropriate subclasses and mixins.
+\begin{enumerate}
+\item term classes are named {\tt term+term}, {\tt term+var}, {\tt term+const}, {\tt term+appl} and {\tt
+term+abs} for generic (higher-order) terms
+\item Each mixin (e.g. sorts, theories, \ldots) is a module in its own right and therefore has its 
+      own short name {\tt <<Ext>>}.
+\item The new classes are have the names {\tt term.<<Ext>>+term}, {\tt term.<<Ext>>+var},\ldots.
+\item New functions have the forms {\tt term$\sim$<<Ext>>-<<Name>>}, {\tt term.<<Ext>>=<<Name>>},\ldots
+Note that the generic functions {\tt term$\sim$<<Name>>} keep their name, even if the methods are 
+specialized or even completely rewritten for the particular extension of the term class.
+\end{enumerate}

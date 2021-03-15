@@ -1,0 +1,9 @@
+Here's a description of the contents:
+
+prog/  the lisp code.  Each group of files that makes up a system has its
+       own subdirectory.
+fasl/  where compiled binary files will be placed.
+tex/   where automatically produced tex files will be placed
+doc/   where some tex files needed to run the manual are found.
+
+

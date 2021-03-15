@@ -1,0 +1,14 @@
+\section{\keim\ problems}
+
+This will be the introduction to the \keim\ problem facility.
+
+This \keim\ system provides the basic functionality for defining and manipulating proof objects. The key
+purpose for all classes and interface functions is to provide a common basis for various proof formats and
+calculi.  The common structure supported in this system is that proofs are trees (or rather directed acyclic
+graphs or DAGs) where the {\em nodes} are objects that contain a formula and a {\em justification}, which in turn
+contain a rule and a set of supporting nodes. These dependencies give the DAG structure of the proof. 
+
+Since proofs only make sense in a certain context \keim\ also provides the class of {\em problem} objects,
+which record the curent environment, the assumptions and the conclusion that is proven in the proof. 
+\keim\ problems also make sense without a proof.
+

@@ -1,0 +1,322 @@
+\chapter{Syntax of \protect{\post}}
+\label{App:post-syntax}
+\post\ ({\bf P}artial {\bf O}rder {\bf S}orted {\bf T}ype-Theory) is intended to be the integrating object
+language for all \keim\ activities. At the moment \post\ is more powerful than the implementation that does
+not yet support a sort concept. The current sort concept is that of well-typed terms, although the
+introduction of arbitrary type constants corresponds to a simple many-sorted signature (i.e. there are no
+subsort relations). In the unsorted version of \keim, the sort information coded into the sort
+structure of \post\ will not be discarded, but will automatically be relativized (transformed) into a
+(semantically equivalent) set of resulting (unsorted) terms. Thus only the existence of an order-sorted
+language like \post\ can enhance the readability of the input and free the user of the (sometimes
+error-prone) work of relativization.
+
+
+{\bf $\Omega$-deduction problems} are lists, that contain
+\begin{enumerate}
+\item {\tt <Declarations>}
+\item {\tt <Axioms>}
+\item and an {\tt <Assertion>}
+\end{enumerate}
+The intended semantics of $\Omega$-deduction problems is that of a
+theorem in mathematical practice: "Let {\tt <Declarations>}, then
+{\tt <Assertion>}." In some theory defined earlier by {\tt <Axioms>}.\par
+Here the implication {\tt <Axioms> $\models$ <Assertion>} is to be
+validated in all models, that satisfy {\tt <Declarations>}.\par
+\post\ is a variant of the simply typed $\lambda$-calculus, with
+sorts, partial functions and modalities. In the following we give the
+syntax of well-typed formulae in \post.
+
+\section{Types}
+\post\ formulae come with a type symbol, which specifies the type
+(individual constant, function, predicate \ldots) of the object denoted
+by the formula.\par
+The {\bf base-types $\iota$} of {\bf individuals} and the type $o$ of {\bf truth values} are
+denoted by the symbols {\tt I} and {\tt O} in \post.
+
+Further base type symbols can be declared by {\tt (type-constants (T S ...)} and 
+{\tt (type-variables (T S ...))}, where type variables used for polymorphic constants.
+
+The syntax of type symbols is inductively defined by
+\begin{enumerate}
+\item type constants and type variables in the signature are types. In particular the predefined 
+      base type symbols {\tt I} and {\tt O}  are types 
+\item if ${\tt S}^1$,\ldots,${\tt S}^n$ and {\tt T} are type  symbols, then
+{\tt (T ${\tt S}^1$\ldots${\tt S}^n$)} is also a type  symbol,
+denoting the type of functions with $n$ arguments of types
+ ${\tt S}^1$,\ldots,${\tt S}^n$ with the image in the sort {\tt T}.
+\end{enumerate}
+
+\section{Declarations}
+\label{sec:declarations}
+\subsection{The signature}
+The signature is the datastructure that contains the type information for constants, therefore its
+\post\ representation is a constant declaration of the form {\tt (constants <decs>)}, where
+{\tt <decs>} is a sequence of declarations or the form {\tt (<symbol> <Type>)}, such that {\tt <symbol>} is a
+new symbol and {\tt <Type>} is a Type.        
+
+Since \post\ in theory expects closed formulae, all variables are bound and therefore are declared by the
+binding operator {\tt LAM}. For the ease of notation there are {\bf variable declarations} of the form {\tt
+(variables <vardecs>)} which are equivalent to a sequence of bindings by universal quantification. Since
+\post\ is an order-sorted language, therefore variables are viewed to have a sort rather than a type, the
+declaration {\tt <vardecs>} is a sequence of declarations or the form {\tt (<symbol> <Sort>)}, such that
+{\tt <symbol>} is a new symbol and {\tt <Sort>} is a unary predicate. The type of a variables can be
+computed from the sort of a variable. Therefore a variable declaration of the form {\tt (X S)} where S is a
+term of type {\tt (0 T)} causes the variable {\tt X} to be declared of type {\tt T}.
+
+In \post\ there are further {\bf term-} and {\bf subsort declarations} that carry further taxonomic
+information. They are of the form {\tt (term-decs (<formula> <sort>))} and 
+{\tt (subsort-decs (<sort> <sort>)} respectively. Here, the type of {\tt <formula>} has to be {\tt
+T}, iff that of {\tt <sort>} is {\tt (O T)}, subsort declarations compare sort expressions of the
+same type. These declarations will be supported operationally by future versions of \keim\ and are
+relativized to new formulae which explicitly carry the sort information.
+
+
+\section{Well-formed formulae}
+
+Well-typed formulas have a type. Sorts are predicates (sets of objects of type {\tt T}), and therefore have the 
+type of the form {\tt (O T)}.
+\begin{enumerate}
+\item If {\tt (X T)} is a declared variable, then {\tt X} is a
+      well-typed formula of type {\tt T}.
+\item If {\tt (c T)} is declared, then {\tt c} is a
+      well-formed formula of type {\tt T}.
+\item If the type of {\tt A} is ${\tt (T\;\;S}^1\ldots{\tt S}^n{\tt)}$ and for $i=1,\ldots,n$
+      {\tt (type ${\tt B}^i$)=${\tt S}^i$},
+      then {\tt (A ${\tt B}^1$ \ldots ${\tt B}^n$)} is a well-formed
+      formula of type {\tt T}.
+\item If the type of {\tt A} is {\tt T}, and ${\tt S}$ is a predicate of type {\tt (OR)}, then
+      {\tt (LAM (X S) A)} and {\tt (LAM (X R) A)}  are well-formed formulae of type {\tt (T R)}.
+\end{enumerate}
+For a formal definition we give 
+\section{A type inference System for \post}
+This type inference systems is  terminating deduction system for assertions like 
+"in some {\bf variable context} $\Gamma$ and some {\bf Signature} $\Sigma$ the formula (is well-typed and)
+of the type $\alpha$". Variable contexts and signatures are of the form
+\begin{description}
+\item[Context] $\Gamma$ ::= $\emptyset \bigl|\Gamma\& {\tt X\colon\alpha}$,
+\item[Signature] $\Sigma$ ::= $\emptyset \bigl|\Gamma\& {\tt c\colon\alpha}$,
+\end{description}
+where $\& F$ is the operation $\cup\{F\}$. In a slight abuse of notation we will write $X\in\Gamma$, if
+$X\colon\alpha\in\Gamma$ for some $\alpha$.\par
+We also need the operation of context enhancement
+\[\Gamma\oplus X\colon\alpha\;\;\colon=\left\{
+\begin{array}{cl}
+(\Gamma\setminus\{X\colon\beta\})\& X\colon\alpha  & X\colon\beta\in\Gamma  \\
+\Gamma\& X\colon\alpha                             & X\not\in\Gamma 
+\end{array}\right.\]
+We first give the type inference systems for \post\ terms. It is a simple variant of the ML-type system.
+\def\gsv{{\Gamma;\Sigma\vdash\;\;}}
+\begin{description}
+\item[$\Gamma$-start] \geru{{\tt X:A}\in\Gamma}{\gsv{\tt X:A}}
+\item[$\Sigma$-start] \geru{{\tt c:A}\in\Sigma}{\gsv {\tt c:A}}
+\item[ftype]\geru{\gsv{\tt A:type}\premdivider{\tt B:type}}{\gsv{\tt(A\;\; B):type}}
+\item[app]\geru{\Gamma\oplus\beta\colon{\tt type};\Sigma\vdash{\tt A\;\;:\;\;(}\alpha\beta^1...\beta^n{\tt)}
+\premdivider{\tt B}^1\colon\beta^1\premdivider\ldots\premdivider{\tt B}^n\colon\beta^n}
+{\gsv{\tt (A\;\;B}^1\ldots{\tt B}^n{\tt)\;\;:\;\;}\alpha}
+\item[abs]\geru{\Gamma\oplus{\tt X:}\beta;\Sigma\vdash\;\;{\tt A:}\alpha\premdivider{\tt S:(O}\beta{\tt )}}%
+{\gsv{\tt(LAM\;\;(X\;\;}\beta{\tt)\;\; A):(}\alpha\beta{\tt )}}
+\item[rel]\geru{\Gamma\oplus\beta\colon{\tt type};\Sigma\vdash
+{\tt(LAM\;\;(X\;\;}\beta{\tt) (ifthen\;\;(S\;\; X)\;\; A)) : }\alpha}
+{\gsv{\tt(LAM\;\;(X\;\; S)\;\; A) : }\alpha}
+\item[inst]\geru{\gsv{\tt A\;\;:\;\;}\tau}{\gsv{\tt A\;\;:\;\;}\sigma(\tau)}, where $\sigma$ is a type substituion 
+with $\Dom(\sigma)\subset\Gamma$
+\end{description}
+As with the ML-Type system we have that each well formed formula has a unique least type, with respect to the 
+subsumption ordering on types.\par
+
+\subsection{Other \keim\ objects}
+
+\begin{description}
+\item[clauses] {\tt (clause <vardec> $L^1$ \ldots $L^n$)}, 
+where the $L^i$ are literals, that is valid \post\ atoms and their negations and {\tt <vardec>} is a
+variable declaration the of the form {\tt (variables ($X^1$ $S^1$) \ldots ($X^m$ $S^m$))} (cf.
+\ref{sec:declarations}) and the $X^i$ are the free 
+variables of sorts $S^i$ in the clause. The variables are declared in the clause, since clauses are
+commonly kept variable-disjoint and therefore the variables are not known before the creation of the clause.
+
+\item[substitutions] {\tt (substitution ($X^1$ \ldots $X^n$) ($T^1$ \ldots $T^n$))}, where the $X^i$ are the
+domain and the $T^i$ specify the codomain of the substitution in question.
+
+\item[positions] {\tt (position $k^1$ \ldots $k^n$)}, where the $k^i$ are natural numbers
+\end{description}
+
+
+\section{\post\ description of $\Omega$-deduction problems}
+
+A \post\ problem consists of a set of {\bf input formulae} that represent the problem to be solved 
+and a set of (partial) proofs and supplementary data in various formats. The status describes the 
+problem as {\tt open}, {\tt proven}, {\tt transformed}, \ldots
+
+\begin{verbatim}
+<problem>       ::== (problem <name> <status> <inputs> <proof>*)
+<status>        ::== (status <symbol>+)
+<inputs>        ::== (inputs <inputdec>* <theorem>)
+<inputdec>      ::== (<label> <dec>)
+<inputdec>      ::== (<label> (axiom <name> <formula>))
+<theorem>       ::== (<label> (theorem <name> <formula>))
+<proof>         ::== <split>
+<proof>         ::== <cnf>
+<proof>         ::== <rp-proof>
+<proof>         ::== <r-graph>
+<proof>         ::== <nd-proof>
+\end{verbatim}
+
+\subsection{The Split protocol}
+
+{\sc Das hier ist noch nicth genau durchdacht}
+
+Preprocessing may enable the system to split the input problem into smaller problems which are 
+simpler to solve. These problems are also in the 
+\begin{verbatim}
+<split>         ::== (split <problem> <problem>+ <split-just>)
+<split-just>    ::== weiss ich noch nicht
+\end{verbatim}
+
+\subsection{ the CNF protocol}
+
+{\sc Das hier ist noch nicht genau durchdacht}
+\begin{verbatim}
+<cnf>           ::== (cnf <name> <cnf-clauses> <cnf-relation>)
+<cnf-clauses>   ::== (cnf-clauses <cnf-cl>+)
+<cnf-cl>        ::== (<label> <clause>)
+<cnf-cl>        ::== (<label> (skolemconstant <constdec>)
+<cnf-relation>  ::== (cnf-relation <cnf-ref>+)
+<cnf-rel>       ::== (<label> <rel-pair>)
+<rel-pair>      ::== weiss ich noch nicht
+\end{verbatim}
+
+\subsection{\post\ description of resolution- paramodulation proofs}
+
+A \post\ proof is a succession of numbered proof steps containing initial clauses, resolution,
+paramodulation and factoring steps. All proof steps are represented in a uniform way:\par\noindent
+{\tt ($\#$ $C$ $J$)}, where $\#$ is a number or a label for the proof step, $C$ is a clause and $J$ 
+is a justification in one of the following forms.
+\begin{description}
+\item[resolution] {\tt (resolution $C$  ($\#p_1$ $\#L_1$) ($\#p_2$ $\#L_2$) $R$ $\sigma$)}, where $C$ is the
+resulting clause, the $\#p_i$ are numbers of previous proof steps (denoting the parent clauses inside) and
+the $\#L_i$ are the number of literal that has been resolved on in the resolution step. $R$ is the rule 
+used for the resolution (like {\tt standard}, {\tt symmetric}, ...) and  $\sigma$ is the
+unifier used in this resolution.
+\item[paramodulation] {\tt (paramodulation $C$ ($\#p_1$ $\#L$) ($\#p_2$ $\#E$ $dir$) $R$ $\sigma$ $\Pi$)}, where $C$,
+$\#p_i$, $L$ and $\sigma$ are as in the resolution above and $\#E$ is a literal in the clause in $\#p_2$, that
+is an equation oriented in the direction $dir$, which has been applied to {\tt ($\#p_1$ $\#L$)} at 
+the position $\Pi$. $dir$ is one of the keywords {\tt rl} (right to left) or {\tt lr} (left to right).
+\item[factoring] {\tt (factor $C$ ($\#p$ $L_1$ $L_2$) $\sigma$)}
+\end{description}
+The representation of a resolution paramodulation proof will have the following BNF
+\begin{verbatim}
+<rp-proof>      ::==    (rp-proof <name> <proof-step>+)
+<proof-step>    ::==    (<label> <clause> <step>)
+<step>          ::==    (resolution <litlab> <litlab> <res-rule>
+                               <substitution>)
+<step>          ::==    (paramodulation <litlab> <elitlab> <res-rule>
+                               <substitution> <position>)
+<step>          ::==    (<label> <clause> (factor <substitution>))
+<litlab>        ::==    (<label> <number>)
+<elitlab>       ::==    (<label> <number> <dir>)
+<dir>           ::==    lr
+<dir>           ::==    rl
+<res-rule>      ::==    {\em symbol}
+\end{verbatim}
+
+Here is an example for a refutation-paramodulation proof:\par
+
+\begin{verbatim}
+(problem FOO (status proven)
+  (inputs
+    (dec1 (constant (p (O I))))
+    (dec2 (constant (q (O I I)))) 
+    (dec3 (constant (a I)))
+    (dec4 (constant (b I)))
+    (dec5 (constant (c I)))
+    (ax1 (axiom (exists (LAM (Z I) (forall (LAM (X I) 
+                   (and (q a Z) (implies (p X) (= a Z)))))))))
+    (ax2 (axiom (not (p c))))
+    (thm (theorem (q a a))))
+  (cnf FOO-cnf 
+    (cnf-clauses 
+      (in1 (clause (variables) (q a b)))
+      (in2 (clause (variables (x I)) (= a b) (not (p x))))
+      (in3 (clause (variables) (p c)))
+      (in4 (clause (variables) (not (q a a)))))
+    (cnf-relation
+      (weiss ich noch nicht)))
+  (rp-proof FOO-rp
+    (d5 (clause (variables) (= a b)) 
+            (resolution (in2 2) (in3 1) standard
+                        (substitution (x) (c)))
+    (d6 (clause (variables) (q a a))  
+            (paramodulation (in1 1) (d5 1 rl) standard
+                        (substitution () ()) (position 1 2)))
+    (d7 (clause (varibles) emptyclause) 
+            (resolution (d6 1) (in4 1) standard
+                        (substitution () ())))))
+\end{verbatim}
+
+\subsection{Refutation graphs}
+Deduction graphs consist of a set of clauses and polylinks, which consist of a set of literals in the set of
+clauses, which are unifiable. Therefore polylinks are in \post\ in the form 
+{\tt (polylink ($\#p_1$ $\#L_1$),\ldots,($\#p_n$ $\#L_n$) $\sigma$)}, where $\sigma$ is the witnessing unifier.
+Note that polylinks always contain at least one positive and one negative literal.\par
+
+\begin{verbatim}
+<r-graph>       ::==    (r-graph <name> <polylink>*)
+<polylink>      ::==    (polylink <litlab> <litlab>+
+                            <substitution>)
+\end{verbatim}
+
+\subsection{\post\ descriptions of natural deduction proofs}
+
+The representation of a natural deduction proof will have the following
+BNF.
+
+\begin{verbatim}
+<nd-proof>     ::== (nd-proof <name> <proof-assumps> <conclusion> 
+                      <plan-list> <line-list>)
+<proof-assumps>   ::== (proof-hyps <formula>*)
+<conclusion>   ::== (conclusion <formula>)
+<plan-list>    ::== (plans <plan>*)
+<plan>         ::== (<label>+)
+<line-list>    ::== (lines <line>*)
+<line>         ::== (<label> <hyps> <assertion> <justification>)
+<hyps>         ::== (<label>*)
+<justification>::== (<rule-name> (<term>*) (<label>*))
+<rule-name>    ::== {\em symbol}
+\end{verbatim}
+with the following restrictions.  Every line must have a unique label.
+The lines should appear in linearized order 
+of the proof structure, such that no line's label should appear in another
+line's hyps or justification before the line itself appears (not really 
+necessary, but makes things easier).  Each member of the proof's
+``plans'' attribute should be of the form 
+\begin{verbatim}
+(planned-line support-line*)
+\end{verbatim}
+where {\tt planned-line} should be the label of a line that is not yet 
+justified, and each {\tt support-line} should be the label of a line from which the
+unjustified line is to be justified.  
+
+The assertion of the last line of the proof should be the same as the
+proof's conclusion attribute.  Any hyps of the last line should have
+assertions that are included in the proof's hyps slot.  
+
+An unjustified line will have as justification {\tt (PLAN () ())},
+while a hypothesis with label {\tt foo} 
+will have the justification {\tt (HYP () (foo))}.  There should be
+enough
+type information in the formulas to be able to reparse them unambiguously.
+Each proof rule will expect a certain format for its justification,
+for example, ordering of the lines in the justification may be important.
+
+Here's an example of a proof, assuming that I have the \post\ right.
+\begin{verbatim}
+(constants (P (O I)) (a I))
+
+(nd-proof FOO
+  (proof-hyps (all (lambda (x I) (P x))))
+  (conclusion (P a))
+  (plans (L1 L2))
+  (lines 
+    (L2 (L2) (all (lambda (x I) (P x))) (HYP () (L2)))
+    (L1 (L2) (P a) (PLAN () ()))))
+\end{verbatim}

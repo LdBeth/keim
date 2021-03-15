@@ -1,0 +1,61 @@
+;;; -*- syntax: common-lisp; package: user; base: 10; mode: lisp -*-
+
+(in-package #-symbolics :user #+symbolics :fcl-user)
+
+(unless (mk::find-system 'ags)
+  (mk::find-system 'ags :load))
+
+(defvar *resolution-top-dir* 
+  (concatenate 'string *keim-top-dir* "prog" *dir-sep* "resolution" *dir-sep*))
+
+(defvar *resolution-repair-file* 
+  (concatenate 'string *resolution-top-dir* "repair.lisp"))
+
+(mk:defsystem resolution
+    :depends-on (problem uni)
+    :finally-do (pushnew :resolution *features*)
+    :source-pathname *resolution-top-dir*
+    :source-extension nil
+    :binary-pathname nil
+    :binary-extension nil
+    :binary-root-dir *keim-binary-dir*
+    :tex-root-dir *keim-tex-dir*
+    :components
+    ((:module LIT :depends-on () 
+	      :source-pathname ""
+	      :components ((:file "literal")))
+     (:module CL :depends-on (LIT) 
+	      :source-pathname ""
+	      :components ((:file "clause")))
+     (:module TOSET :depends-on (LIT CL) 
+	      :source-pathname ""
+	      :components ((:file "set")))
+     (:module DELTA :depends-on (CL) 
+	      :source-pathname ""
+	      :components ((:file "delta")))
+     (:module RES :depends-on (CL DELTA) 
+	      :source-pathname ""
+	      :components ((:file "resolution")))
+     (:module SIMPL :depends-on (DELTA RES CL)
+	      :source-pathname ""
+	      :components ((:file "simpl")))
+     (:module CNF :depends-on (DELTA RES CL)
+	      :source-pathname ""
+	      :components ((:file "cnf")))
+     ))
+
+
+
+(defun resolution-startup ()
+  (in-package "KEIM")
+  (fresh-line)
+  (when (probe-file *resolution-repair-file*)
+    (load *resolution-repair-file*))
+  (values))
+
+(defun resolution-dump (filename)
+  (funcall (symbol-function (find-symbol "SYS~DUMP-SYSTEM" 
+					 (find-package "AGS")))
+	   'resolution filename 'resolution-startup))
+
+

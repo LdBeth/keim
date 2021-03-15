@@ -1,0 +1,26 @@
+There is a lot to be done.  Here are some open areas that need to 
+be addressed.
+
+We hope that the users of KEIM will contribute some of their expertise and
+code to the KEIM library.
+
+1.  Bound variables are currently implemented using names, so when we do
+    lambda-contraction, we potentially have to do a lot of renaming.
+    It would be nice to have a DeBruijn-style implementation of abstractions,
+    or better, something like a hybrid, so that only in printing do we
+    generate names of variables, but based on the original parsed input.
+
+2.  Unification is a little weak.  We need better, faster, unification
+    algorithms.  In particular algorithms for different types of sort
+    systems.
+
+3.  Speaking of sort systems, we plan to extend KEIM to allow sorts. 
+    The details have not yet been decided. 
+
+4.  It would be nice to have some small sample implementations using KEIM.
+    See the example resolution prover in keim/prog/examples.
+    
+5.  Overall efficiency needs to be examined.
+
+6.  The extraction of documentation should be easier to extend.
+

@@ -1,0 +1,177 @@
+
+\newlength{\argumentwidth}
+\newlength{\minargwidth}
+\setlength{\minargwidth}{15em}
+\newlength{\namewidth}
+\newlength{\typewidth}
+
+\newenvironment{lispdefinition}[3]%
+   {\goodbreak\removelastskip\bigskip
+    \index{#2}
+    \settowidth{\namewidth}{\bf #2}
+    \settowidth{\typewidth}{[#1]}
+    \setlength{\argumentwidth}{\textwidth}
+    \addtolength{\argumentwidth}{-1\namewidth}
+    \addtolength{\argumentwidth}{-1\typewidth}
+    \addtolength{\argumentwidth}{-2em}
+    \ifdim\argumentwidth<\minargwidth%
+           \ifdim\argumentwidth<-1.5em%
+                  \setlength{\argumentwidth}{\textwidth}%
+                  \addtolength{\argumentwidth}{-7em}%
+                  \begin{bf}#2\end{bf}\newline%
+                  \hspace*{\fill}[#1]\newline%
+                  \hspace*{\fill}\parbox[t]{\argumentwidth}{\raggedright #3}%
+             \else%
+                  \setlength{\argumentwidth}{\textwidth}%
+                  \addtolength{\argumentwidth}{-7em}%
+                  \begin{bf}#2\end{bf}\hspace{\fill}[#1]\newline%
+                  \hspace*{\fill}\parbox[t]{\argumentwidth}{\raggedright #3}%
+             \fi
+       \else%
+           \begin{bf}#2\end{bf}\hspace{1em}\parbox[t]{\argumentwidth}{\raggedright #3}\hspace{1em}[#1]%
+       \fi
+    \begin{lispdeclarations}}%
+   {\end{lispdeclarations}
+    \removelastskip\bigskip}
+
+\newenvironment{lispdeclarations}%
+   {\begin{list}%
+           {}%
+           {\itemsep1ex
+            \topsep0ex
+            \partopsep0mm
+            \parsep0ex
+            \leftmargin8em
+            \rightmargin1.5em
+            \labelwidth7em
+            \labelsep1em}}%
+   {\end{list}}
+
+\newlength{\slotoptionwidth}
+\newlength{\optionwidth}
+\newenvironment{structure}[1]%
+    {\parskip0ex
+     \goodbreak
+     \removelastskip
+     \bigskip
+     \begin{bf}#1\end{bf}\hspace*{\fill}[Structure]
+     \newline}%
+    {\removelastskip
+     \bigskip}
+
+\newenvironment{structureoptions}%
+    {\hspace*{2em} options:
+     \begin{list}%
+            {}%
+            {\topsep0ex
+             \partopsep0ex
+             \parsep0ex
+             \itemsep0ex
+             \settowidth{\labelwidth}{:additional-functions}
+             \labelsep1em
+             \setlength{\leftmargin}{\labelwidth}
+             \addtolength{\leftmargin}{4em}
+             \addtolength{\leftmargin}{\labelsep}
+             \rightmargin3em
+             \setlength{\optionwidth}{\textwidth}
+             \addtolength{\optionwidth}{-\rightmargin}
+             \addtolength{\optionwidth}{-\leftmargin}}}%
+    {\end{list}}
+
+\newenvironment{structureslots}%
+    {\goodbreak
+     \hspace*{2em} slots:
+     \begin{list}%
+            {}%
+            {\topsep0ex
+             \partopsep0ex
+             \parsep0ex
+             \itemsep0ex
+             \setlength{\labelwidth}{10em}
+             \labelsep1em
+             \setlength{\leftmargin}{\labelwidth}
+             \addtolength{\leftmargin}{4em}
+             \addtolength{\leftmargin}{\labelsep}
+             \rightmargin3em}}%
+    {\end{list}}
+
+\newenvironment{slotoptions}%
+    {\setlength{\slotoptionwidth}{\textwidth}
+     \addtolength{\slotoptionwidth}{-\rightmargin}
+     \addtolength{\slotoptionwidth}{-\leftmargin}
+     \begin{minipage}[t]{\slotoptionwidth}
+          \raggedright
+          \begin{list}%
+                 {}%
+                 {\settowidth{\labelwidth}{:parameter-access}
+                  \labelsep1em
+                  \setlength{\leftmargin}{\labelwidth}
+                  \addtolength{\leftmargin}{\labelsep}
+                  \rightmargin0em}}%
+    {     \end{list}
+     \end{minipage}}
+
+\newenvironment{structuredocs}%
+    {\goodbreak
+     \hspace*{2em} documentation:\newline
+     \addtolength{\textwidth}{-4em}
+     \addtolength{\textwidth}{-\rightmargin}
+     \hspace*{4em}\begin{minipage}[t]{\textwidth}}%
+    {              \end{minipage}}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Macros for POST syntax declarations
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% These are the macros for documenting POST syntax.
+%% use them in the lisp file in the form
+%%
+%%\begin{postsyntax}
+%%\syntax{\nt{clause} ::= (clause \nt{head} \{\nt{literal}\}*).
+%% \nt{ende}.}
+%%\syntaxcomment{Some crazy comment goes here, but it is optional}
+%%\syntax{\nt{END}.
+%%\end{postsyntax}
+%%
+%% Here, if somewhere before there is an occurrnce of \makepostsyntax
+%%  the argument in \syntax will be formated in a verbatim-like 
+%% environment (code.sty) and will be written to a file ***.postsyntax, 
+%% which will eventually contain all post syntax declarations.
+%% This file can then be formatted into a section with the command 
+%% \makepostsyntaxsection. 
+%% However at the moment the linefeedss in the argument of \syntax
+%% will be listed as ^^M in the ***.postsyntax file.
+%%
+%% The macro \postindex will write its argument into an index.
+%%
+
+
+\newif\ifpostsyntax
+\postsyntaxfalse
+\newwrite\postsyntaxfile
+\def\makepostsyntaxsection{\ifpostsyntax\immediate\closeout\postsyntaxfile\else\fi
+                           \section{Post Syntax}\label{sec:postsyntax}
+                           \begin{code}
+                           \input \jobname.postsyntax
+                           \end{code}}
+
+\def\postindex#1{\index{post syntax ! {#1}}}
+
+\def\makepostsyntax{\postsyntaxtrue\immediate\openout\postsyntaxfile=\jobname.postsyntax}
+\def\nt#1{{\it #1}}
+
+\long\def\syntax{\catcode`\^^M=13\catcode`\ =13\long\def\p##1{\begin{code}##1\end{code}%
+\def\it{\noexpand\it}\def\{{\noexpand\{}\def\}{\noexpand\}}%\catcode`\^=11\def\^^M{\noexpand\\}\catcode`\^=13%
+\ifpostsyntax\immediate\write\postsyntaxfile{##1}\else\fi}\p}
+\def\syntaxcomment{\catcode`\^^M=5\catcode`\ =10}
+\newenvironment{postsyntax}{\bgroup}{\egroup}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Miscelaneous functions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\vb{\catcode`\~=12\tt}
+

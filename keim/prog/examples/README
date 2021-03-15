@@ -1,0 +1,638 @@
+This set of files implements a simple semi-interactive resolution prover.  
+That is, resolution of first-order formulas, with optional factoring and 
+subsumption. 
+
+NO equality handling (paramodulation or demodulation) is provided.
+ 
+I'm sure the efficiency of this prover can be improved.  I didn't make any
+great effort to optimize things.  In particular, subsumption is not
+very efficient.  I mainly wanted to show the facilities
+that are provided in KEIM.  For that reason, there is no equality handling,
+no way to do fancy weighting of formulas, or other stuff you will find in
+OTTER.  Nice to have would be a way to set the initial set of support.
+
+Here's a description of the files:
+
+resprover.system: the defsystem file (also in top-level $KEIM/sys directory)
+prover.lisp: the guts of the prover.  Flags are described here as well.
+prover-factoring.lisp: factoring routines
+prover-subsume.lisp: routines for doing subsumption, forward and backward
+prover-command.lisp: An interactive top-level is set up, and commands
+                     are defined.
+prover-flags.lisp:  A way to set flags is defined through a command SET-FLAG.
+prover-print.lisp:  Functions to print resolution proofs.
+test.lisp: A list of problems to be attempted.  Some description of the
+           problems is provided.
+           Problem names include: 
+           TEST1 (simple propositional)
+           TEST2 (simple FO)
+           FAC-TEST (example where factoring is necessary)
+           FAIL-TEST (not a theorem, should fail gracefully)
+           FULL-SET (full set on two atoms)
+           PROP-TEST (an easy propositional test)
+           SCHOOL (Schoolmaster's puzzle from Lewis Carroll, subsumption needed)
+           SALT (Salt and mustard puzzle from Lewis Carroll, not easy)
+
+HOW TO RUN THE PROVER:
+
+Start up your lisp, load the system resprover, and then run 
+(resprover::prover-top).  You will get a prompt like
+
+PROVER: 
+
+If you type a question mark ?, all commands will be printed out.  
+You can get help on a command by using the command HELP with the command
+name.
+
+To initialize a problem for resolution, use the command PROVE.  The initial
+clauses will be generated and printed (depending on the flags *report-kept*
+and *report-generated*).  To start resolution prover, use the command GO.
+
+After a proof is finished, you can print out the important steps with
+the PRINT command.  
+
+To get out, type the command EXIT.  Alternatively, just using your normal
+break character (normally Control-C) should put you in the debugger where
+you can decide what to do.
+
+Here's a sample run:
+
+------------------------------------------------------------------
+Script started on Sun Oct 10 19:09:08 1993
+sys> acl
+Allegro CL 4.1 [SPARC; R1] (3/29/93 5:44)
+Copyright (C) 1985-1992, Franz Inc., Berkeley, CA, USA.  All Rights Reserved.
+;; Optimization settings: safety 1, space 1, speed 1, debug 2
+;; For a complete description of all compiler switches given the current
+;; optimization settings evaluate (EXPLAIN-COMPILER-SETTINGS).
+USER(1): (load "boot")
+; Loading /home1/omega/sys/boot.lisp.
+;   Fast loading /home1/omega/sys/defsystem.fasl.
+Warning: (METHOD MAKE-COMPONENT ((EQL :DEFSYSTEM))) is defined more than once
+         in the file /home1/omega/sys/defsystem.lisp
+Warning: (METHOD MAKE-COMPONENT ((EQL :SYSTEM))) is defined more than once in
+         the file /home1/omega/sys/defsystem.lisp
+Warning: (METHOD MAKE-COMPONENT ((EQL :SUBSYSTEM))) is defined more than once
+         in the file /home1/omega/sys/defsystem.lisp
+Warning: (METHOD MAKE-COMPONENT ((EQL :MODULE))) is defined more than once in
+         the file /home1/omega/sys/defsystem.lisp
+Warning: (METHOD MAKE-COMPONENT ((EQL :FILE))) is defined more than once in
+         the file /home1/omega/sys/defsystem.lisp
+Warning: (METHOD MAKE-COMPONENT ((EQL :PRIVATE-FILE))) is defined more than
+         once in the file /home1/omega/sys/defsystem.lisp
+Use the functions LOAD-SYS and COMPILE-SYS to load
+a system.  Example:
+(load-sys 'keim)
+(load-sys 'nd)
+Use the functions EXDOCU-SYS and CHECK-SYS to extract LaTeX Documentation or
+check the programming conventions in the system.
+USER(2): (load-sys 'resprover)
+; Loading /home1/omega/sys/resprover.system.
+System TEST-KEIM not loaded. Shall I try loading it? y
+
+;   Loading /home1/omega/sys/test-keim.system.
+System AGS not loaded. Shall I try loading it? y
+
+;   Loading /home1/omega/sys/ags.system.
+Warning: LOAD-SYS, :OPERATOR was defined in /home1/omega/sys/boot.lisp and is
+         now being defined in /home1/omega/sys/ags.system
+Warning: COMPILE-SYS, :OPERATOR was defined in /home1/omega/sys/boot.lisp and
+         is now being defined in /home1/omega/sys/ags.system
+; Loading /home1/omega/sys/test-keim.system.
+; Loading /home1/omega/sys/resolution.system.
+; Loading /home1/omega/sys/problem.system.
+; Loading /home1/omega/sys/term.system.
+; Loading /home1/omega/sys/base-keim.system.
+; Fast loading /home/omega/ags/fasl/modules.fasl.
+; Fast loading /home/omega/ags/fasl/check-modules.fasl.
+; Fast loading /home/omega/ags/fasl/doc.fasl.
+; Fast loading /home/omega/ags/fasl/docl.fasl.
+; Fast loading /home/omega/ags/fasl/doca.fasl.
+; Fast loading /home/omega/ags/fasl/man.fasl.
+; Fast loading /home/omega/ags/fasl/sys.fasl.
+; Fast loading /home/omega/ags/fasl/pprint.fasl.
+; Fast loading /home/omega/keim/fasl/keim.fasl.
+; Fast loading /home/omega/keim/fasl/help.fasl.
+; Fast loading /home/omega/keim/fasl/env.fasl.
+; Fast loading /home/omega/keim/fasl/post.fasl.
+; Fast loading /home/omega/keim/fasl/type.fasl.
+; Fast loading /home/omega/keim/fasl/position.fasl.
+; Fast loading /home/omega/keim/fasl/symbol.fasl.
+; Fast loading /home/omega/keim/fasl/term-basic.fasl.
+; Fast loading /home/omega/keim/fasl/sym.fasl.
+; Fast loading /home/omega/keim/fasl/appl.fasl.
+; Fast loading /home/omega/keim/fasl/abstr.fasl.
+; Fast loading /home/omega/keim/fasl/sksym.fasl.
+; Fast loading /home/omega/keim/fasl/term-comp.fasl.
+; Fast loading /home/omega/keim/fasl/term-mixin.fasl.
+; Fast loading /home/omega/keim/fasl/poly.fasl.
+; Fast loading /home/omega/keim/fasl/meta.fasl.
+; Fast loading /home/omega/keim/fasl/fo.fasl.
+; Fast loading /home/omega/keim/fasl/top.fasl.
+; Fast loading /home/omega/keim/fasl/ho-op.fasl.
+; Fast loading /home/omega/keim/fasl/subst.fasl.
+; Fast loading /home/omega/keim/fasl/justification.fasl.
+; Fast loading /home/omega/keim/fasl/node.fasl.
+; Fast loading /home/omega/keim/fasl/assum.fasl.
+; Fast loading /home/omega/keim/fasl/conc.fasl.
+; Fast loading /home/omega/keim/fasl/problem.fasl.
+; Fast loading /home/omega/keim/fasl/proof.fasl.
+; Loading /home1/omega/sys/uni.system.
+; Fast loading /home/omega/keim/fasl/unif.fasl.
+; Fast loading /home/omega/keim/fasl/literal.fasl.
+; Fast loading /home/omega/keim/fasl/clause.fasl.
+; Fast loading /home/omega/keim/fasl/set.fasl.
+; Fast loading /home/omega/keim/fasl/delta.fasl.
+; Fast loading /home/omega/keim/fasl/resolution.fasl.
+; Fast loading /home/omega/keim/fasl/simpl.fasl.
+; Fast loading /home/omega/keim/fasl/cnf.fasl.
+; Loading /home1/omega/sys/inter.system.
+; Fast loading /home/omega/keim/fasl/argtypes.fasl.
+; Fast loading /home/omega/keim/fasl/argdefs.fasl.
+; Fast loading /home/omega/keim/fasl/interface.fasl.
+; Fast loading /home/omega/keim/fasl/ascii-interface.fasl.
+; Fast loading /home/omega/keim/fasl/command.fasl.
+; Loading /home1/omega/sys/nd.system.
+; Fast loading /home/omega/keim/fasl/nd.fasl.
+; Fast loading /home/omega/keim/fasl/rule.fasl.
+; Fast loading /home/omega/keim/fasl/test.fasl.
+; Fast loading /home1/omega/sys/prover.fasl.
+; Fast loading /home1/omega/sys/prover-command.fasl.
+; Fast loading /home1/omega/sys/prover-print.fasl.
+; Fast loading /home1/omega/sys/prover-flags.fasl.
+; Fast loading /home1/omega/sys/prover-subsume.fasl.
+; Fast loading /home1/omega/sys/prover-factoring.fasl.
+; Loading /home/omega/keim/prog/examples/test.lisp.
+(#<TEX-MODULE: resprover-test>)
+USER(6): (in-package :resprover)
+#<The RESPROVER package>
+RESPROVER(7): (prover-top)
+
+PROVER: ?
+
+Resolution prover commands
+    ?: Show all RESPROVER commands.
+    BREAK: Go directly into the debugger.
+    EXIT: Leave the PROVER top level.
+    GO: Run resolution on the initialized problem.
+    HELP: Show help for a command.
+    PRINT: Print the last proof worked on.
+    PROVE: Initialize a problem for resolution proof.
+    SET-FLAG: Set given flag with given value.
+NIL
+PROVER: help prover
+
+PROVE is a command.
+Initialize a problem for resolution proof. 
+The command format for PROVE is:
+
+PROVER: PROVE  PROBLEM  
+               PROBLEM  
+The arguments have the following meanings:
+PROBLEM : A KEIM problem
+
+
+PROVER: prove 
+
+PROBLEM (PROBLEM) A KEIM problem: test1
+
+
+C-1.    +P  Initial
+
+C-2.    -P  Initial
+
+C-3.    BOX Res: <C-2,C-1> []
+Eureka!
+PROVER: print
+
+PROOF (RES-PROOF) A proof to print: [(Resolution-proof TEST1 INITIALIZED)]
+
+
+
+Problem: TEST1
+Proven.
+  Initial clauses:
+  C-1.    +P  Initial
+
+  C-2.    -P  Initial
+
+  Derived clauses:
+  C-3.    BOX Res: <C-2,C-1> []
+  
+PROVER: prove test2
+
+
+C-1.    -(P X)  Initial
+
+C-2.    +(P x-1)  Initial
+
+C-3.    BOX Res: <C-2,C-1> [x-1 :-> X]
+Eureka!
+PROVER: prove fac-test
+
+
+C-1.    -(P x-4) -(P x-5)  Initial
+
+C-2.    -(P x-6)  Fac: <C-1>
+
+C-3.    +(P x-2) +(P x-3)  Initial
+
+C-4.    +(P x-7)  Fac: <C-3>
+
+C-5.    BOX Res: <C-4,C-2> [x-7 :-> x-6]
+Eureka!
+PROVER: set-flag
+
+FLAG (FLAG) Flag: *use-factoring*
+
+VALUE (ANYTHING) Value: [T]nil
+
+PROVER: prove fac-test
+
+
+C-1.    -(P x-10) -(P x-11)  Initial
+
+C-2.    +(P x-8) +(P x-9)  Initial
+PROVER: go
+
+CANNOT PROCEED.
+PROVER: prove fail-test
+
+
+C-1.    +Q  Initial
+
+C-2.    +P  Initial
+PROVER: go
+
+CANNOT PROCEED.
+PROVER: print
+
+PROOF (RES-PROOF) A proof to print: [(Resolution-proof FAIL-TEST INITIALIZED)]
+
+
+
+Problem: FAIL-TEST
+Not proven.
+  Initial clauses:
+  C-1.    +Q  Initial
+
+  C-2.    +P  Initial
+
+  
+PROVER: prove full-set
+
+
+C-1.    -A -B  Initial
+
+C-2.    -A +B  Initial
+
+C-3.    +A -B  Initial
+
+C-4.    +A +B  Initial
+PROVER: go
+
+
+C-5.    -A  Res: <C-2,C-1> []
+
+C-6.    -B  Res: <C-3,C-1> []
+
+C-7.    +B  Res: <C-4,C-2> []
+
+C-8.    BOX Res: <C-7,C-6> []
+Eureka!
+PROVER: prove prop-test
+
+
+C-1.    -P -Q  Initial
+
+C-2.    -P +R  Initial
+
+C-3.    +Q -R  Initial
+
+C-4.    +Q +P  Initial
+
+C-5.    +P  Initial
+PROVER: go
+
+
+C-6.    -Q  Res: <C-1,C-5> []
+
+C-7.    +R  Res: <C-2,C-5> []
+
+C-8.    -R -P  Res: <C-3,C-1> []
+
+C-9.    +Q -P  Res: <C-3,C-2> []
+
+C-10.    -R  Res: <C-3,C-6> []
+
+C-11.    BOX Res: <C-10,C-7> []
+Eureka!
+PROVER: print
+
+PROOF (RES-PROOF) A proof to print: [(Resolution-proof PROP-TEST INITIALIZED)]
+
+
+
+Problem: PROP-TEST
+Proven.
+  Initial clauses:
+  C-1.    -P -Q  Initial
+
+  C-2.    -P +R  Initial
+
+  C-3.    +Q -R  Initial
+
+  C-4.    +Q +P  Initial
+
+  C-5.    +P  Initial
+
+  Derived clauses:
+  C-6.    -Q  Res: <C-1,C-5> []
+
+  C-10.    -R  Res: <C-3,C-6> []
+
+  C-7.    +R  Res: <C-2,C-5> []
+
+  C-11.    BOX Res: <C-10,C-7> []
+  
+PROVER: set-flag *use-factoring*
+
+VALUE (ANYTHING) Value: [NIL]t
+
+PROVER: set-flag *use-forward-subsumption*
+
+VALUE (ANYTHING) Value: [T]
+
+PROVER: prove school
+
+
+C-1.    +H  Initial
+
+C-2.    +A  Initial
+
+C-3.    +D  Initial
+
+C-4.    -A -B +C  Initial
+
+C-5.    -E -K +M  Initial
+
+C-6.    -R +S +T  Initial
+
+C-7.    -C -D +K  Initial
+
+C-8.    -R +E +N  Initial
+
+C-9.    -H -L +R  Initial
+
+C-10.    -C -M -E  Initial
+
+C-11.    -S -N -K  Initial
+
+C-12.    -A +B -H -R  Initial
+
+C-13.    -A -D +L  Initial
+
+C-14.    -C -T +E  Initial
+
+C-15.    +K +L  Initial
+
+C-16.    +M +N  Initial
+
+C-17.    +R +S  Initial
+PROVER: set-flag *use-backward-subsumption*
+
+VALUE (ANYTHING) Value: [NIL]t
+
+PROVER: go
+
+
+C-18.    -B +C  Res: <C-4,C-2> []
+
+C-19.    -E +M +L  Res: <C-5,C-15> []
+
+C-20.    +T +S  Res: <C-6,C-17> []
+
+C-21.    -C +K  Res: <C-7,C-3> []
+
+C-22.    -C -E +M  Res: <C-21,C-5> []
+
+C-23.    +K -B  Res: <C-21,C-18> []
+
+C-24.    -B -E +M  Res: <C-23,C-5> []
+
+C-25.    +E +N +S  Res: <C-8,C-17> []
+
+C-26.    -L +R  Res: <C-9,C-1> []
+
+C-27.    -L +E +N  Res: <C-26,C-8> []
+
+C-28.    +R +K  Res: <C-26,C-15> []
+
+C-29.    +R -E +M  Res: <C-28,C-5> []
+
+C-30.    +K +E +N  Res: <C-28,C-8> []
+
+C-31.    -C -E -K  Res: <C-10,C-5> []
+
+C-32.    -C -M -R +N  Res: <C-10,C-8> []
+
+C-33.    -C -E +N  Res: <C-10,C-16> []
+
+C-34.    -M -E -B  Res: <C-10,C-18> []
+
+C-35.    -S -K -R +E  Res: <C-11,C-8> []
+
+C-36.    -S -N +L  Res: <C-11,C-15> []
+
+C-37.    -S -K +M  Res: <C-11,C-16> []
+
+C-38.    -N -K +R  Res: <C-11,C-17> []
+
+C-39.    -N -K +T  Res: <C-11,C-20> []
+
+C-40.    -S -N -C  Res: <C-11,C-21> []
+
+C-41.    -S -N -B  Res: <C-11,C-23> []
+
+C-42.    -S -N +R  Res: <C-11,C-28> []
+
+C-43.    -D +L  Res: <C-13,C-2> []
+
+C-44.    +L  Res: <C-43,C-3> []
+
+C-45.    +R  Res: <C-44,C-26> []
+
+C-46.    +E +N  Res: <C-45,C-8> []
+
+C-47.    +N -C -M  Res: <C-46,C-10> []
+
+C-48.    +E -S -K  Res: <C-46,C-11> []
+
+C-49.    -C -T -K +M  Res: <C-14,C-5> []
+
+C-50.    -T -C -M  Res: <C-14,C-10> []
+
+C-51.    -T +E -B  Res: <C-14,C-18> []
+
+C-52.    -C +E +S  Res: <C-14,C-20> []
+
+C-53.    -C -E  Res: <C-22,C-10> []
+
+C-54.    -C -T  Res: <C-53,C-14> []
+
+C-55.    -E -B  Res: <C-53,C-18> []
+
+C-56.    -C +N  Res: <C-53,C-46> []
+
+C-57.    -T -B  Res: <C-54,C-18> []
+
+C-58.    -C +S  Res: <C-54,C-20> []
+
+C-59.    -B +N  Res: <C-55,C-46> []
+
+C-60.    -C -S -K  Res: <C-56,C-11> []
+
+C-61.    -B +S  Res: <C-57,C-20> []
+
+C-62.    -C -N -K  Res: <C-58,C-11> []
+
+C-63.    -B -S -K  Res: <C-59,C-11> []
+
+C-64.    -B -N -K  Res: <C-61,C-11> []
+
+C-65.    -K +M +T  Res: <C-37,C-20> []
+
+C-66.    -S +M -C  Res: <C-37,C-21> []
+
+C-67.    -S +M -B  Res: <C-37,C-23> []
+
+C-68.    -K +M -C  Res: <C-37,C-58> []
+
+C-69.    -K +M -B  Res: <C-37,C-61> []
+
+C-70.    -N +T -C  Res: <C-39,C-21> []
+
+C-71.    -N +T -B  Res: <C-39,C-23> []
+
+C-72.    -K +T +E  Res: <C-39,C-46> []
+
+C-73.    -K +T -C  Res: <C-39,C-56> []
+
+C-74.    -K +T -B  Res: <C-39,C-59> []
+
+C-75.    -S -C +E  Res: <C-40,C-46> []
+
+C-76.    -S -C  Res: <C-40,C-56> []
+
+C-77.    -S -B  Res: <C-76,C-18> []
+
+C-78.    -C +T  Res: <C-76,C-20> []
+
+C-79.    -C  Res: <C-76,C-58> []
+
+C-80.    -B  Res: <C-79,C-18> []
+
+C-81.    -A +B -R  Res: <C-12,C-1> []
+
+C-82.    +B -R  Res: <C-81,C-2> []
+
+C-83.    +B  Res: <C-82,C-45> []
+
+C-84.    BOX Res: <C-83,C-80> []
+Eureka!
+PROVER: print
+
+PROOF (RES-PROOF) A proof to print: [(Resolution-proof SCHOOL INITIALIZED)]
+
+
+
+Problem: SCHOOL
+Proven.
+  Initial clauses:
+  C-1.    +H  Initial
+
+  C-2.    +A  Initial
+
+  C-3.    +D  Initial
+
+  C-4.    -A -B +C  Initial
+
+  C-5.    -E -K +M  Initial
+
+  C-6.    -R +S +T  Initial
+
+  C-7.    -C -D +K  Initial
+
+  C-8.    -R +E +N  Initial
+
+  C-9.    -H -L +R  Initial
+
+  C-10.    -C -M -E  Initial
+
+  C-11.    -S -N -K  Initial
+
+  C-12.    -A +B -H -R  Initial
+
+  C-13.    -A -D +L  Initial
+
+  C-14.    -C -T +E  Initial
+
+  C-15.    +K +L  Initial
+
+  C-16.    +M +N  Initial
+
+  C-17.    +R +S  Initial
+
+  Derived clauses:
+  C-81.    -A +B -R  Res: <C-12,C-1> []
+
+  C-82.    +B -R  Res: <C-81,C-2> []
+
+  C-83.    +B  Res: <C-82,C-45> []
+
+  C-40.    -S -N -C  Res: <C-11,C-21> []
+
+  C-43.    -D +L  Res: <C-13,C-2> []
+
+  C-44.    +L  Res: <C-43,C-3> []
+
+  C-26.    -L +R  Res: <C-9,C-1> []
+
+  C-45.    +R  Res: <C-44,C-26> []
+
+  C-46.    +E +N  Res: <C-45,C-8> []
+
+  C-56.    -C +N  Res: <C-53,C-46> []
+
+  C-76.    -S -C  Res: <C-40,C-56> []
+
+  C-21.    -C +K  Res: <C-7,C-3> []
+
+  C-22.    -C -E +M  Res: <C-21,C-5> []
+
+  C-53.    -C -E  Res: <C-22,C-10> []
+
+  C-54.    -C -T  Res: <C-53,C-14> []
+
+  C-20.    +T +S  Res: <C-6,C-17> []
+
+  C-58.    -C +S  Res: <C-54,C-20> []
+
+  C-79.    -C  Res: <C-76,C-58> []
+
+  C-18.    -B +C  Res: <C-4,C-2> []
+
+  C-80.    -B  Res: <C-79,C-18> []
+
+  C-84.    BOX Res: <C-83,C-80> []
+  
+PROVER: exit
+NIL
+RESPROVER(8): :exit
+; Exiting Lisp
+sys> exit
+exit
+
+script done on Sun Oct 10 19:28:34 1993
+
+

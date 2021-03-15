@@ -1,0 +1,38 @@
+;;; -*- syntax: common-lisp; package: user; base: 10; mode: lisp -*-
+
+(in-package #-symbolics :user #+symbolics :fcl-user)
+
+(unless (mk::find-system 'ags)
+  (mk::find-system 'ags :load))
+
+(defvar *inter-top-dir* (concatenate 'string *keim-top-dir* 
+				     "prog" *dir-sep* "inter" *dir-sep*))
+
+(mk:defsystem inter
+    :depends-on (base-keim)
+    :finally-do (pushnew :inter *features*)
+    :source-pathname *inter-top-dir*
+    :source-extension nil
+    :binary-pathname nil
+    :binary-extension nil
+    :binary-root-dir *keim-binary-dir*
+    :tex-root-dir *keim-tex-dir*
+    :components
+    ((:module ARG :depends-on () 
+	      :source-pathname ""
+	      :components ((:file "argtypes")))
+     (:module ARGDEFS :depends-on (ARG) 
+	      :source-pathname ""
+	      :components ((:file "argdefs")))
+     (:module INTER :depends-on (ARG) 
+	      :source-pathname ""
+	      :components ((:file "interface")))
+     (:module ASI :depends-on (INTER ARG) 
+	      :source-pathname ""
+	      :components ((:file "ascii-interface")))
+     (:module COM :depends-on (INTER ARG) 
+	      :source-pathname ""
+	      :components ((:file "command")))
+     ))
+
+

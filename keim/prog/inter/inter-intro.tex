@@ -1,0 +1,27 @@
+\section{Introduction}
+
+With many systems, we will want to have some kind of interaction with a
+user.  The modules contained in this system provide support for such a
+user interface.
+
+One thing we may like to have is the ability to define commands for the
+user to apply.  We would prefer to do this in a controlled way, so that
+we can check the types of arguments before we actually call the \lisp\ 
+code that carries out the command.  For this reason, we define what are
+called {\em argument types\/} in the module {\tt ARG} ({\tt argtypes.lisp}),
+as well as some common argument types in the module {\tt ARGDEFS}
+({\tt argdefs.lisp}). 
+
+With argument types defined, we can define commands. These act as the
+interface between what the user inputs and the actual \lisp\ functions
+that do that job.
+
+We would also like to be able to have our system run with various types
+of interface systems, ASCII terminals being just one of them.  We want
+to write our programs without having to know just what kind of interface
+they'll be used on, so that we can add and modify interfaces without
+making our already-written programs obsolete.  In the module {\tt INTER}
+({\tt inter.lisp}), we define a general framework for user interfaces, and
+in the module {\tt ASI} ({\tt ascii-interface.lisp}), we define a
+particular instance for ASCII terminals.
+

@@ -1,0 +1,58 @@
+;;; -*- syntax: common-lisp; package: user; base: 10; mode: lisp -*-
+
+(in-package #-symbolics :user #+symbolics :fcl-user)
+
+(unless (mk::find-system 'ags)
+  (mk::find-system 'ags :load))
+
+(defvar *problem-top-dir* (concatenate 'string *keim-top-dir* 
+				       "prog" *dir-sep* 
+				       "problem" *dir-sep*))
+
+(defvar *problem-repair-file* (concatenate 'string *problem-top-dir* 
+					   "repair.lisp"))
+
+(mk:defsystem problem
+    :depends-on (term)
+    :finally-do (pushnew :problem *features*)
+    :source-pathname *problem-top-dir*
+    :source-extension nil
+    :binary-pathname nil
+    :binary-extension nil
+    :binary-root-dir *keim-binary-dir*
+    :tex-root-dir *keim-tex-dir*
+    :components
+    ((:module JUST :depends-on () 
+	      :source-pathname ""
+	      :components ((:file "justification")))
+     (:module NODE :depends-on (JUST) 
+	      :source-pathname ""
+	      :components ((:file "node")))
+     (:module ASSUM :depends-on () 
+	      :source-pathname ""
+	      :components ((:file "assum")))
+     (:module CONC :depends-on () 
+	      :source-pathname ""
+	      :components ((:file "conc")))
+     (:module PROB :depends-on (NODE conc assum) 
+	      :source-pathname ""
+	      :components ((:file "problem")))
+     (:module PROOF :depends-on (PROB) 
+	      :source-pathname ""
+	      :components ((:file "proof")))
+     ))
+
+
+
+(defun problem-startup ()
+  (in-package "KEIM")
+  (fresh-line)
+  (when (probe-file *problem-repair-file*)
+    (load *problem-repair-file*))
+  (values))
+
+(defun problem-dump (filename)
+  (funcall (symbol-function (find-symbol "SYS~DUMP-SYSTEM" 
+					 (find-package "AGS")))
+	   'problem filename 'problem-startup))
+

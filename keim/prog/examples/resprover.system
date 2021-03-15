@@ -1,0 +1,55 @@
+;;; -*- syntax: common-lisp; package: user; base: 10; mode: lisp -*-
+
+(in-package #-symbolics :user #+symbolics :fcl-user)
+
+(unless (mk::find-system 'test-keim)
+  (mk::find-system 'test-keim :load))
+
+(mk:defsystem resprover
+    :depends-on (test-keim)
+    :initially-do 
+    (unless (find-package "RESPROVER")
+      (make-package "RESPROVER"	
+		    :use (cons (find-package "KEIM")
+			       (package-use-list (find-package "KEIM")))))
+    :source-pathname 
+	(concatenate 'string *keim-top-dir* *dir-sep* "prog" *dir-sep*
+		     "examples" *dir-sep*)
+    :source-extension nil
+    :binary-pathname nil
+    :binary-root-dir *keim-binary-dir*
+    :binary-extension nil
+    :tex-root-dir *keim-tex-dir*
+    :components 
+    ((:module resprover
+	      :depends-on nil
+	      :source-pathname ""
+	      :components ((:file "prover")))
+     (:module resprover-print
+	      :depends-on (resprover-commands)
+	      :source-pathname ""
+	      :components ((:file "prover-print")))
+     (:module resprover-commands
+	      :depends-on nil
+	      :source-pathname ""
+	      :components ((:file "prover-command")))
+     (:module resprover-flags
+	      :depends-on nil
+	      :source-pathname ""
+	      :components ((:file "prover-flags")))
+     (:module resprover-subsume
+	      :depends-on nil
+	      :source-pathname ""
+	      :components ((:file "prover-subsume")))
+     (:module resprover-factoring
+	      :depends-on nil
+	      :source-pathname ""
+	      :components ((:file "prover-factoring")))
+     (:module resprover-test
+	      :depends-on nil
+	      :source-pathname ""
+	      :components ((:file "test" :load-only t)))
+     )
+    )
+
+

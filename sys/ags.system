@@ -1,0 +1,517 @@
+;;; -*- syntax: common-lisp; package: user; base: 10; mode: lisp -*-
+(in-package #-symbolics :user #+symbolics :fcl-user)
+
+(defvar *keim-version* "1.1" "Current version of KEIM")
+
+;;; Here we define a bunch of lisp-implementation dependent stuff. 
+;;; *lisp-fasl-type* will allow us (by always using the :output-file
+;;; argument to compile-file) to allow several lisps to coexist and not
+;;; get their compiled files mixed up.  This will have to be augmented
+;;; for any lisps that aren't represented.
+
+;;; Fixes for Macintosh Common Lisp 2.0 contributed by Espen Vestre.
+
+(defvar *lisp-fasl-type*
+  #+(and :symbolics :imach)         "ibin"
+  #+(and :Symbolics (not :imach))   "bin"
+  #+(and dec common vax (not ultrix)) "FAS"
+  #+(and dec common vax ultrix)       "fas"
+  #+KCL                               "o"
+  #+Xerox                             "dfasl"
+  #+(and Lucid MC68000)               "lbin"
+  #+(and Lucid VAX VMS)               "vbin"
+  #+(and Lucid sparc unix :lcl4.1)    "sbin41"
+  #+(and Lucid sparc unix :lcl4.0)    "sbin"
+  #+ccl                               "fasl"
+  #+(and excl (not :allegro-v4.2))    "fasl"
+  #+(and excl :allegro-v4.2)          "fasl42"
+  #+(and :CMU (or SUN4 SPARC))         "sparcf"
+  #+(and :CMU (not (or SUN4 SPARC)))   "cmufasl"
+  #+PRIME                             "pbin"
+  #+HP                                "b"
+  #+TI                                "xfasl"
+  )
+
+; without following lucid won't be able to fasload files of this type
+#+:lcl4.1 (pushnew *lisp-fasl-type* lcl:*load-binary-pathname-types*
+		   :test #'string=)
+
+#+cmu
+(when (string= "16e" (lisp-implementation-version))
+  (pushnew :cmu16e *features*))
+
+(unless (boundp '*lisp-fasl-type*) (setq *lisp-fasl-type* "newfasl"))
+
+(setq mk::*filename-extensions* (cons "lisp" *lisp-fasl-type*))
+(defun load-sys (system-name)
+  (mk:operate-on-system system-name :load :force :new-source-and-dependents))
+(defun compile-sys (system-name)
+  (mk:operate-on-system system-name :compile :force :all))
+(defun exdocu-sys (system-name)
+  (let ((mk::*operations-propagate-to-subsystems* nil))
+  (mk:operate-on-system system-name :exdocu :force :new-source)))
+(defun check-sys (system-name)
+  (mk:operate-on-system system-name :compile :force :all))
+
+
+
+;;; Lucid Lisp has a stupid compile-file that ignores the umask we have,
+;;; producing compiled files that are not writeable by the group.
+;;; We prefer to set compiled files to be readable and writeable by
+;;; the group. Following doesn't seem to work with Lucid 4.1. Suggestions?
+
+#+(and lcl4.0 (not :lcl4.1))
+(progn
+	 
+  (def-foreign-function (set-umask (:language :c)
+				   (:name "_umask")
+				   (:return-type :signed-32bit))
+      (number :signed-32bit))
+
+  (defadvice (compile-file force-umask-002) (file &rest args)
+    (let (old-umask)
+      (unwind-protect
+	   (progn (setq old-umask (set-umask #o002))
+		  (apply-advice-continue file args))
+	(set-umask old-umask))))
+  )
+
+;;; Allegro 4.1/2 locks the COMMON-LISP package, so that none of its symbols
+;;; can be redefined.  
+#+(or allegro-v4.1 allegro-v4.2)
+(setq excl:*enable-package-locked-errors* nil)
+;;; Allegro by default loads fasl files as only stubs. The .fasl files then 
+;;; must always be where they were when they were loaded, otherwise
+;;; the lisp will get really confused.  We'll turn off this feature, which
+;;; will make the dumped lisp a lot bigger, but at least more predictable.
+;;; Following doesn't really work, though, because this variable is bound
+;;; while loading. So when you begin the initial load, you should say
+;;; :libfasl nil as optional args to load.
+#+(or allegro-v4.1 allegro-v4.2)
+(setq excl:*libfasl* nil)
+#+(or allegro-v4.1  allegro-v4.2)
+(setf (mp:global-symbol-value 'excl:*redefinition-warnings*) nil)
+#+(or allegro-v4.1  allegro-v4.2)
+(setq excl:*fasl-default-type* *lisp-fasl-type*)
+
+;;; These are declarations we use..
+(proclaim '(declaration edited authors input effect value remark example))
+(export '(edited authors input effect value remark example))
+
+;;; We'll assume that CLOS or PCL has already been loaded into this
+;;; lisp. At the moment there isn't a good portable way to ensure this here.
+;;; We may also have to fix up PCL.  That is done in the ags system definition.
+
+;;; Here we define the top directory of our distribution.  We'll define
+;;; other subdirectories relative to this definition.
+
+;;; CHANGE THIS VARIABLE!!!!!! 
+
+(defvar *omega-top-dir* 
+     (concatenate 'string 
+       #+symbolics "js-sfbsun:" #-symbolics ""
+       "/home/omega/distrib/"))
+
+;;; YOU SHOULDN'T NEED TO CHANGE ANYTHING BELOW THIS.
+
+
+;; In the mac OS, :, not /, separates directories:
+(defvar *dir-sep* #+ccl ":" #-ccl "/")
+;; changed by EV: all lines containing *dir-sep* from here on:
+
+(defvar *omega-tex-macro-dir*
+    (concatenate 'string *omega-top-dir* "doc" *dir-sep* "macros" *dir-sep*))
+
+(defvar *ags-top-dir*
+    (concatenate 'string *omega-top-dir* "ags" *dir-sep*))
+(defvar *ags-binary-dir*     
+  (concatenate 'string *ags-top-dir* "fasl" *dir-sep*))
+(defvar *ags-tex-dir*     
+  (concatenate 'string *ags-top-dir* "tex" *dir-sep*))
+
+(defvar *keim-top-dir*
+    (concatenate 'string *omega-top-dir* "keim" *dir-sep*))
+(defvar *keim-binary-dir*
+  (concatenate 'string *keim-top-dir* "fasl" *dir-sep*))
+(defvar *keim-tex-dir*
+  (concatenate 'string *keim-top-dir* "tex" *dir-sep*))
+
+
+(defvar *omega-main-top-dir*
+  (concatenate 'string *omega-top-dir* "main" *dir-sep* "prog" *dir-sep*))
+(defvar *omega-main-binary-dir*
+  (concatenate 'string *omega-top-dir* "main" *dir-sep* "fasl" *dir-sep*))
+(defvar *omega-main-tex-dir*
+  (concatenate 'string *omega-top-dir* "main" *dir-sep* "tex" *dir-sep*))
+
+;;; Before we do anything, we make the package AGS.
+
+(unless (find-package "AGS")
+  (make-package "AGS" :use 
+		#+symbolics '("FCL-USER" "FUTURE-COMMON-LISP")
+		#+(and (not symbolics) (or kcl akcl)) 
+		'("PCL" "LISP" "ITERATE" "WALKER")
+		#+(and (not (or symbolics kcl akcl)) lucid) 
+		'("USER" "LUCID-COMMON-LISP" "LISP")
+		#+cmu17
+		'("COMMON-LISP-USER" "COMMON-LISP")
+		#+cmu16e
+		'("COMMON-LISP-USER" "COMMON-LISP" "PCL")
+		#+allegro-v4.1
+		'("COMMON-LISP-USER" "COMMON-LISP")
+		#+allegro-v4.2
+		'("COMMON-LISP-USER" "COMMON-LISP")
+		;; added by EV: Some symbols of CLOS on its way into the standard
+		;; are not yet in the CL package of MCL 2.0 (but they are in CCL)
+		#+ccl-2
+		'("CCL" "COMMON-LISP")
+		#-(or symbolics akcl kcl lucid cmu17 :cmu16e allegro-v4.1
+		      :allegro-v4.2 ccl-2) 
+		'("COMMON-LISP")))
+
+
+;;; Get the following symbols into the AGS package, then export them to
+;;; any package that uses AGS.
+
+(import '(*omega-top-dir* 
+	  *ags-top-dir*
+	  *lisp-fasl-type* 
+	  *ags-tex-dir* 
+	  *ags-binary-dir*
+	  *omega-tex-macro-dir*
+	  *keim-top-dir* 
+	  *keim-binary-dir* 
+	  *keim-tex-dir* )
+	(find-package "AGS"))
+
+(import '(load-sys compile-sys exdocu-sys check-sys) (find-package "AGS"))
+
+(export '(*omega-top-dir* 
+	  *ags-top-dir*
+	  *lisp-fasl-type* 
+	  *ags-tex-dir* 
+	  *ags-binary-dir*
+	  *omega-tex-macro-dir*
+	  *keim-top-dir* 
+	  *keim-binary-dir* 
+	  *keim-tex-dir* )
+	(find-package "AGS"))
+(export '(load-sys compile-sys exdocu-sys check-sys) (find-package "AGS"))
+
+(in-package :ags)
+; here we set up a read table, so that we can add LaTeX comments to
+; input files by
+; #{This is a comment. \section{abc} #}
+; note that in the above, the \ should *not* be taken as an escape character
+
+
+;;; implementation of read-buffer taken from CMU CL
+
+(unless (fboundp 'read-latex-string)
+  (eval-when (load compile eval)
+
+	     (defvar read-buffer)
+	     (defvar read-buffer-length)
+	     (defvar ouch-ptr)
+	     (defvar inch-ptr)
+
+	     (defmacro reset-read-buffer ()
+	       ;;turn read-buffer into an empty read-buffer.
+	       ;;ouch-ptr always points to next char to write
+	       `(progn
+		  (unless (and (boundp 'read-buffer) read-buffer) (init-read-buffer))
+		  (setq ouch-ptr 0)
+		  ;;inch-ptr always points to next char to read
+		  (setq inch-ptr 0)))
+	     )
+
+  (defun init-read-buffer ()
+    (setq read-buffer (make-string 512)) ;initial bufsize
+    (setq read-buffer-length 512)
+    (reset-read-buffer))
+
+  (eval-when (load compile eval)
+	     (defmacro ouch-read-buffer (char)
+	       `(progn
+		  (if (>= (the fixnum ouch-ptr)
+			  (the fixnum read-buffer-length))
+		      ;;buffer overflow -- double the size
+		      (grow-read-buffer))
+		  (setf (elt (the simple-string read-buffer) ouch-ptr) ,char)
+		  (setq ouch-ptr (1+ ouch-ptr))))
+
+	     ;; macro to move ouch-ptr back one.
+
+	     (defmacro ouch-unread-buffer ()
+	       '(if (> (the fixnum ouch-ptr) (the fixnum inch-ptr))
+		    (setq ouch-ptr (1- (the fixnum ouch-ptr)))))
+	     )
+
+  (defun grow-read-buffer ()
+    (let ((rbl (length (the simple-string read-buffer))))
+      (declare (fixnum rbl))
+      (setq read-buffer
+	    (concatenate 'simple-string
+			 (the simple-string read-buffer)
+			 (the simple-string (make-string rbl))))
+      (setq read-buffer-length (* 2 rbl))))
+
+
+  (eval-when (load compile eval)
+	     (defmacro unread-buffer ()
+	       `(decf (the fixnum inch-ptr)))
+	     )
+
+  (defun read-buffer-to-string ()
+    (subseq (the simple-string read-buffer) 0 ouch-ptr))
+
+
+  (defun read-latex-string (stream)
+    (reset-read-buffer)
+    (do ((char (read-char stream t nil t)
+	       (read-char stream t nil t))
+       	 (last-char-is-sharp nil
+			     (char= char #\#)))
+	((and last-char-is-sharp
+	      (char= char #\}))
+	 (ouch-unread-buffer)(read-buffer-to-string))
+      (ouch-read-buffer char)))
+
+  (defvar *ags-readtable* nil "A readtable defining #{ #} syntax.")
+
+  (setq *ags-readtable* (copy-readtable nil))
+
+  ;; here's the important stuff
+
+  (defun |#{-reader| (stream subchar arg)
+    (declare (ignore subchar arg))
+    (list 'ags::doc~latex (read-latex-string stream)))
+
+  (set-dispatch-macro-character #\# #\{ #'|#{-reader| *ags-readtable*)
+  #+symbolics(set-dispatch-macro-character #\# #\{ #'|#{-reader| *readtable*)
+
+  (setq *readtable* *ags-readtable*)
+
+  (dolist (fun '(read-latex-string |#{-reader| init-read-buffer
+				   read-buffer-to-string grow-read-buffer))
+    (compile fun))
+  )
+
+; for allegro, we need to make *ags-readtable* the default
+#+(or allegro-v4.1 allegro-v4.2)
+(progn
+(setq excl:*cl-default-special-bindings*
+  (remove '*readtable* excl:*cl-default-special-bindings*
+	  :key #'car))
+(tpl:setq-default common-lisp:*readtable* *ags-readtable*))
+
+(in-package :mk)
+
+;;; some setup for defsystem 
+
+(setq *central-registry* 
+  (list (concatenate 'string ags:*omega-top-dir* "sys" user::*dir-sep*)))
+
+(component-operation :load     'load-mod-operation)
+(component-operation 'load     'load-mod-operation)
+
+(defvar *current-component* nil)
+(export '*current-component*)
+
+(unless (fboundp 'load-mod-operation)
+(defun load-mod-operation (component force)
+  ;; Returns T if the file had to be loaded
+  (let* ((binary-pname (component-full-pathname component :binary))
+	 (source-pname (component-full-pathname component :source))
+	 (binary-exists (probe-file binary-pname))
+	 (source-exists (probe-file source-pname))
+	 (source-needs-loading (needs-loading component t nil))
+	 (binary-needs-loading (needs-loading component nil t))
+	 ;; needs-compilation has an implicit source-exists in it.
+	 (needs-compilation (if (component-load-only component)
+				source-needs-loading
+				(needs-compilation component)))
+	 (check-for-new-source 
+	  ;; If force is :new-source*, we're checking for files
+	  ;; whose source is newer than the compiled versions.
+	  (find force '(:new-source :new-source-and-dependents :new-source-all)
+		:test #'eq))
+	 (load-binary (or (find force '(:all :new-source-all t) :test #'eq)
+			  binary-needs-loading))
+	 (load-source
+	  (or *load-source-instead-of-binary*
+	      (and load-binary (component-load-only component))
+	      (and check-for-new-source needs-compilation)))
+	 (compile-and-load
+	  (and needs-compilation (or load-binary check-for-new-source)
+	       (compile-and-load-source-if-no-binary component)))
+	 (*current-component* component))
+    ;; When we're trying to minimize the files loaded to only those
+    ;; that need be, restrict the values of load-source and load-binary
+    ;; so that we only load the component if the files are newer than
+    ;; the load-time.
+    (when *minimal-load*
+      (when load-source (setf load-source source-needs-loading))
+      (when load-binary (setf load-binary binary-needs-loading)))
+
+      (cond (compile-and-load
+	     ;; If we're loading the binary and it is old or nonexistent,
+	     ;; and the user says yes, compile and load the source.
+	     (compile-file-operation component t)
+	     (with-tell-user ("Loading binary"   component :binary)
+	       (or *oos-test*
+		   (progn
+		     (load binary-pname)
+		     (setf (component-load-time component)
+			   (file-write-date binary-pname)))))
+	     T)
+	    ((and source-exists
+		  (or (and load-source	; implicit needs-comp...
+			   (or *load-source-instead-of-binary*
+			       (component-load-only component)
+			       (not *compile-during-load*)))
+		      (and load-binary (not binary-exists)
+			   (load-source-if-no-binary component))))
+	     ;; Load the source if the source exists and:
+	     ;;   o  we're loading binary and it doesn't exist
+	     ;;   o  we're forcing it
+	     ;;   o  we're loading new source and user wasn't asked to compile
+	     (with-tell-user ("Loading source" component :source)
+	       (or *oos-test*
+		   (progn
+		     (load source-pname)
+		     (setf (component-load-time component)
+			   (file-write-date source-pname)))))
+	     T)
+	    ((and binary-exists load-binary)
+	     (with-tell-user ("Loading binary"   component :binary)
+	       (or *oos-test*
+		   (progn
+		     (load binary-pname)
+		     (setf (component-load-time component)
+			   (file-write-date binary-pname)))))
+	     T)
+	    ((and (not binary-exists) (not source-exists))
+	     (tell-user-no-files component :force)
+	     (when *files-missing-is-an-error*
+	       (cerror "Continue, ignoring missing files."
+		       "~&Source file ~S ~:[and binary file ~S ~;~]do not exist."
+		       (namestring source-pname)
+		       (or *load-source-if-no-binary* 
+			   *load-source-instead-of-binary*)
+		       (namestring binary-pname)))
+	     nil)
+	    (t 
+	     nil))))
+(compile 'load-mod-operation)
+)
+
+
+(in-package #-symbolics :user #+symbolics :fcl-user)
+
+
+; check for the new pprint-ing functions
+#-(or :genera-unix :has-xp)
+(when (find-symbol "PPRINT-LOGICAL-BLOCK")
+  (pushnew :has-xp *features*))
+
+(mk:defsystem ags
+              :initially-do (progn (defmacro ags::doc~latex (&rest args)
+				     (declare (ignore args))
+				     (values))
+                                   (setq *readtable* ags::*ags-readtable*))
+	      :finally-do 
+               (progn (pushnew :ags *features*)
+		      (setq *readtable* ags::*ags-readtable*))
+	      :source-pathname
+	      (concatenate 'string *ags-top-dir* "prog" *dir-sep*)
+	      :source-extension "lisp"
+	      :binary-pathname  nil
+	      :binary-root-dir *ags-binary-dir*
+	      :binary-extension nil
+	      :tex-root-dir *ags-tex-dir*
+	      :components
+	      (#-:has-xp
+		    (:module XP :depends-on ()
+			     :finally-do 
+			     (unless (member :has-xp *features*)
+			       (funcall (symbol-function 
+					      (find-symbol "INSTALL"
+							   (find-package "XP")))
+					      :package
+					      (find-package "AGS"))
+				    (dolist (pack (package-used-by-list
+						   (find-package "AGS")))
+				      (use-package (list (find-package "XP"))
+						   pack))
+				    (push :has-xp *features*))
+			     :source-pathname "" 
+			     :components 
+			     ((:file "xp-code")))
+		    #+pcl(:file "pcl-fixes" :load-only t)
+		    (:module MOD :depends-on () :source-pathname ""
+			     :components ((:file "modules")))
+		    (:module CH :depends-on (MOD) :source-pathname ""
+			     :components ((:file "check-modules")))
+		    #+symbolics(:file "emacs/symbolics")	
+		    (:module doc :source-pathname ""
+			     :depends-on (MOD)
+			     :components ((:file "doc")
+					  (:file "docl")
+					  (:file "doca")
+					  (:file "man")))
+		    (:module SYS :depends-on () 
+			     :source-pathname "" 
+			     :components 
+			     ((:file "sys")))
+		    (:module PP :depends-on (#-:has-xp XP) 
+			     :source-pathname "" 
+			     :components 
+			     ((:file "pprint")))))
+
+(defvar *ags-repair-file* (concatenate 'string *ags-top-dir* 
+				       "repair.lisp"))
+
+
+(defun ags-startup ()
+  (in-package "AGS")
+  (fresh-line)
+  (when (probe-file *ags-repair-file*)
+    (load *ags-repair-file*))
+  (values))
+
+(defun ags-dump (filename)
+  (funcall (symbol-function (find-symbol "SYS~DUMP-SYSTEM" 
+					 (find-package "AGS")))
+	   'ags filename 'ags-startup))
+
+
+
+(in-package :mk)
+
+;;; operations for extracting documentation. (real functions are in
+;;; the module man 
+
+(defmethod operate-on-component ((component tex-file)
+				 (op (eql :exdocu)) force)
+  (ags::man~exdocu-file-operation component force))
+
+(defmethod operate-on-component ((component tex-component)
+				 (op (eql :exdocu)) force)
+  (dolist (kid (component-components component))
+    (operate-on-component kid :exdocu force)))
+
+
+(defmethod operate-on-component ((component tex-system)
+				 (op (eql :exdocu)) force)
+  (let ((changed-p nil))
+    (dolist (kid (component-components component))
+      (setq changed-p (or changed-p 
+			  (operate-on-component kid :exdocu force ))))
+    (when (or changed-p (ags::man=needs-exdocu component))
+      (ags::man~exdocu-system-operation component force))))
+
+
+
+
+

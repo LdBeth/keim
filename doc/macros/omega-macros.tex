@@ -1,0 +1,291 @@
+%***********************************************************
+%    Makros fuer Omega-MKRP
+%
+%***********************************************************
+\typeout{Omega-MKRP Makros Version 1.1 vom 11. Juni 1991 zuletzt ge"andert am 2.12.1992}
+% Autoren M. Kohlhase, M. Kerber
+% zuletzt geaendert am 2.12.1992, um laengere Assumptionlisten zu ermoegliche.
+% Dafuer wurden die Macros \assref, \recref, \auxpl und \auxthmline geaendert.
+% Es werden nun zusaetzliche Blanks hinter jedem , und ; geschrieben, so dass umgebrochen
+% werden kann.
+
+% Diese Theoremdefinitionen schreiben Definitionen Bemerkungen in 
+% automatisch in \rm und nicht in \it wie normal. Sie benutzen aber
+% die normalen LaTeX Numerierung und verhalten sich in allem anderen
+% wie die normalen Umgebungen
+
+\newtheorem{Thm}{Theorem}[section]
+\newtheorem{Prop}[Thm]{Proposition}
+\newtheorem{Cor}[Thm]{Corollary}
+\newtheorem{Lemma}[Thm]{Lemma}
+\newtheorem{iGenass}[Thm]{General assumption}
+\newtheorem{iDef}[Thm]{Definition}
+\newtheorem{iNotation}[Thm]{Notation}
+\newtheorem{iRemark}[Thm]{Remark}
+\newtheorem{iRemarks}[Thm]{Remarks}
+\newtheorem{iExample}[Thm]{Example}
+\newtheorem{iExamples}[Thm]{Examples}
+\newtheorem{iAuxmethod}[Thm]{Method}
+
+\makeatletter
+\def\@opargbegindefinition#1#2#3{\trivlist
+      \item[\hskip \labelsep{\bf #1\ #2\ (#3)}]\rm}
+\def\@begindefinition#1#2{\it \trivlist \item[\hskip \labelsep{\bf #1\ #2}]\rm}
+\def\Defcase{\let\@opargbegintheorem=\@opargbegindefinition\let\@begintheorem=\@begindefinition}
+\makeatother
+
+\newenvironment{Def}{\Defcase\begin{iDef}}{\end{iDef}}
+\newenvironment{Notation}{\Defcase\begin{iNotation}}{\end{iNotation}}
+\newenvironment{Rem}{\Defcase\begin{iRemark}}{\end{iRemark}}
+\newenvironment{Rems}{\Defcase\begin{iRemarks}}{\end{iRemarks}}
+\newenvironment{Ex}{\Defcase\begin{iExample}}{\end{iExample}}
+\newenvironment{Exs}{\Defcase\begin{iExamples}}{\end{iExamples}}
+\newenvironment{Genass}{\Defcase\begin{iGenass}}{\end{iGenass}}
+
+\newenvironment{warning}{{\huge Warning!}\em}{\par}
+
+% Voreinstellungen f"ur das Seitenformat
+%Seitengroesse
+\textwidth15.5cm \textheight23.2cm %23cm
+%\textheight15.5cm \textwidth23.2cm %23cm
+\oddsidemargin8mm \evensidemargin8mm 
+\topmargin-10mm
+\parindent0ex
+
+
+\let\phi\varphi
+\let\epsilon\varepsilon
+\newcommand{\comment}[1]{}
+\def\Dom{\hbox{\rm Dom}}
+
+%   Logische Zeichen
+\def\fol{\Rightarrow} % Logische Folgerung
+\def\lof{\Leftarrow} % Umgekehrte logische Folgerung
+\def\TO{\mbox{\tt ->}} % -> in Sorten
+\def\lnot{\neg}
+\def\sdot{\rule{2pt}{2pt}\hskip1pt}
+
+%   Spezielle Zeichen
+\def\phi{\varphi}
+\def\cA{\mbox{$\cal A$}}\def\cB{\mbox{$\cal B$}}\def\cC{\mbox{$\cal C$}}
+\def\cD{\mbox{$\cal D$}}\def\cE{\mbox{$\cal E$}}\def\cF{\mbox{$\cal F$}}
+\def\cG{\mbox{$\cal G$}}\def\cH{\mbox{$\cal H$}}\def\cI{\mbox{$\cal I$}}
+\def\cJ{\mbox{$\cal J$}}\def\cK{\mbox{$\cal K$}}\def\cL{\mbox{$\cal L$}}
+\def\cM{\mbox{$\cal M$}}\def\cN{\mbox{$\cal N$}}\def\cO{\mbox{$\cal O$}}
+\def\cP{\mbox{$\cal P$}}\def\cQ{\mbox{$\cal Q$}}\def\cR{\mbox{$\cal R$}}
+\def\cS{\mbox{$\cal S$}}\def\cT{\mbox{$\cal T$}}\def\cU{\mbox{$\cal U$}}
+\def\cV{\mbox{$\cal V$}}\def\cW{\mbox{$\cal W$}}\def\cX{\mbox{$\cal X$}}
+\def\cY{\mbox{$\cal Y$}}\def\cZ{\mbox{$\cal Z$}}
+\def\A{\mbox{\bf A}}\def\B{\mbox{\bf B}}
+\def\C{\mbox{\bf C}}\def\D{\mbox{\bf D}}
+\def\E{\mbox{\bf E}}\def\F{\mbox{\bf F}}
+\def\G{\mbox{\bf G}}\def\H{\mbox{\bf H}}
+\def\I{\mbox{\bf I}}\def\J{\mbox{\bf J}}
+\def\K{\mbox{\bf K}}\def\L{\mbox{\bf L}}
+\def\M{\mbox{\bf M}}\def\N{\mbox{\bf N}}
+\def\O{\mbox{\bf O}}\def\P{\mbox{\bf P}}
+\def\Q{\mbox{\bf Q}}\def\R{\mbox{\bf R}}
+\def\S{\mbox{\bf S}}\def\T{\mbox{\bf T}}
+\def\U{\mbox{\bf U}}\def\V{\mbox{\bf V}}
+\def\W{\mbox{\bf W}}\def\X{\mbox{\bf X}}
+\def\Y{\mbox{\bf Y}}\def\Z{\mbox{\bf Z}}
+
+\def\NN{\hbox{\bf I\kern-0.2em N}}
+\def\ZZ{\hbox{\bf Z\kern-0.4em Z}}
+\def\RR{\hbox{\bf I\kern-0.2em R}}
+\def\CC{\setbox0=\hbox{\bf C}\hskip0.2em\rule{1pt}{\ht0}\kern-0.4em \box0}
+\def\QQ{\setbox0=\hbox{\bf Q}\hskip0.2em\rule{1pt}{\ht0}\kern-0.4em \box0}
+
+
+%***************************************************************************
+%   Hier kommen die Makros f"ur die Umgebung ndproof
+%***************************************************************************
+% 
+% Die Umgebung ndproof und ndproofsection erwarten ein Argument, ein Label
+% fuer die interne Beweisnummer des Beweises.
+% ndproof setzt das label, mit dem dann ueber \ref zugegriffen werden kann.
+% Mit ndproofsection kann
+% dann ein Teil des Beweises mit dem richtigen Label ausgelagert werden,
+% dabei werden alle Zeilen und labels im Kontext dieses Beweises referenziert.
+% Der Benutzer muss dann selbst darauf achten, das die labelung konsistent
+% bleibt.
+% Die Umgebungen ndproof und  ndproofsection
+% stellt die Makros \proofheader, \pl, \planline, \ndproofdevider und
+% \thmline zur Verf"ugung.
+%
+% Das Makro \ndproofheader erzeugt eine Kopfzeile mit den Tabellenueber-
+% schriften No, S;D, Formula, Reason
+% 
+% Das Makro \pl erzeugt eine Beweiszeile, die automatisch durchnumeriert
+% wird, es hat 4 Argumente:
+% <label>, <assump>, <formula>, <reason>; dabei ist <label> ein Name 
+% fuer die Zeilenummer, mit dem unter <assump> und <reason> auf die Zeile 
+% referenziert werden kann.
+% <label> ist dabei eine beliebige Zeichenkette, die keine TeX-Sonder- 
+%     Zeichen (\,%,&,$,...), aber auch nicht die Zeichen "," ";" "."
+%     und "|" enthalten darf.
+% <assump> ist eine durch Kommata getrennte Liste von vorher definierten
+%     <labels> 
+% <formula> ist die Formel, die in der Zeile stehen soll.
+% <reason> ist die Begr"undung fuer die Beweiszeile, sie besteht aus
+%     einer Regel, gefolgt duch ein Semikolon ";" gefolgt von einer
+%     durch Kommata getrennten Liste von definierten labels.
+%     ACHTUNG!! Wenn die Liste von labels leer ist muss immer noch ein
+%     Semikolon stehen, wenn nicht: viel Spass beim Suchen in den
+%     kryptischen Fehlermelldungen.
+%
+% \planline hat nur die Argumente 
+% <label>, <formula> und erzeugt eine Beweiszeile, wo die
+% Assumptionliste nur aus der Zeilennummer besteht und die Begruendung
+% aus (PLAN).
+% 
+% \thmline erzeugt die abschliessende Theoremzeile eines Beweises und
+% hat die Argumente <assump>, <formula>, <reason>, da auf diese Zeile
+% nicht mehr referenziert werden muss
+%
+% \ndproofdevider hat ein Argument und zieht einen waagerechten
+% Strich durch den Beweis zu Verschoenerungszwecken und schreibt das
+% Argument in die Mitte
+%
+% \pletc erzeugt eine Beweiszeile, in der in jeder Spalte vertikale
+% unsoweiter Punkte stehen
+%
+% \nextlinenumber gibt der folgenden Beweiszeile die Nummer die im Argument
+% steht. Ab da wird dann auch automatisch weiternumeriert.
+%************************************************************************
+
+\newcounter{plineno}
+
+\def\doref#1{\ref{\ndprooflabel:#1}}
+
+\def\recref#1,#2.{{%
+\def\tist{#1}\def\test{#2}%
+\ifx\tist\empty{}\else\recorref #1|.\fi%
+%\ifx\test\empty{}\else,\recref #2.\fi}}
+\ifx\test\empty{}\else, \recref #2.\fi}}
+
+\def\recorref#1|#2.{{%
+\def\tist{#1}\def\test{#2}%
+\ifx\tist\empty{}\else\doref{#1}\fi%
+\ifx\test\empty{}\else\big|\recorref #2.\fi}}
+
+\def\rulerecref#1,#2.{{%
+\def\tist{#1}\def\test{#2}%
+\ifx\tist\empty{}\else\ \doref{#1}\fi%
+\ifx\test\empty{}\else\ \rulerecref #2.\fi}}
+
+\def\ruleref#1;#2.{#1\rulerecref #2,.}
+
+%\def\assref#1;#2.{{\recref #1,.};{\recref #2,.}}
+\def\assref#1;#2.{{\recref #1,.}; {\recref #2,.}}
+
+\newcommand{\auxpl}[3]%assump,formula,reason
+{\arabic{plineno}. 
+%\> \parbox[t]{2.4cm}{\assref #1.}\> $\vdash$ \>
+\> \begin{minipage}[t]{2.4cm}\raggedright{\assref #1.}\end{minipage}\> $\vdash$ \>
+\begin{minipage}[t]{8.4cm}\raggedright{#2}\end{minipage}
+\> \parbox[t]{3cm}{(\ruleref #3.)}\\}
+
+\newcommand{\auxthmline}[3]%assump,formula,reason
+{Thm.
+%\> \parbox[t]{2.4cm}{\assref #1.}\> $\vdash$ \>
+\> \begin{minipage}[t]{2.4cm}\raggedright{\assref #1.}\end{minipage}\> $\vdash$ \>
+\begin{minipage}[t]{9.4cm}\raggedright{#2}\end{minipage}
+\> \parbox[t]{2cm}{(\ruleref #3.)}\\}
+
+\newcommand{\dolabel}[1]{\label{#1}}
+
+\newcommand{\pl}[4]%label,assump,formula,reason
+{\refstepcounter{plineno}\dolabel{\ndprooflabel:#1}%
+\auxpl{#2}{#3}{#4}}
+
+\newcommand{\nextlinenumber}[1]%lineno
+{\ifnum#1>\theplineno%
+\setcounter{plineno}{#1}\addtocounter{plineno}{-1}%
+\else\typeout{Illegal proofline-number #1 in ND-proof \ndprooflabel}%
+\fi}
+
+\newcommand{\planline}[2]%label,formula
+{\pl{#1}{#1;}{#2}{PLAN;}}
+
+\newcommand{\openline}[2]%label,assump,formula
+{\pl{#1}{#1;}{#2}{Open;}}
+
+\newcommand{\thmline}[3]%assump,formula,reason
+{\auxthmline{#1}{#2}{#3}}
+
+\newcommand{\pletc}%
+{$\quad\vdots$\>$\quad\vdots$\>\>$\qquad\vdots$\>$\quad\vdots$\\}
+
+\newlength{\boxbreite}\newlength{\strichbreite}
+ 
+\newcommand{\ndproofdevider}[1]%
+{\settowidth{\boxbreite}{ #1 }%
+\setlength{\strichbreite}{0.5\textwidth}%
+\addtolength{\strichbreite}{-0.5\boxbreite}%
+\rule[0.8ex]{\strichbreite}{0.3pt} #1 \rule[0.8ex]{\strichbreite}{0.3pt}\\}
+
+\newenvironment{ndproof}[1]%Beweislabel
+{\global\def\ndprooflabel{#1}\setcounter{plineno}{0}
+\footnotesize\begin{tabbing}%
+\hspace*{1.1cm}\=\hspace*{2.5cm}\=\hspace*{0.6cm}%
+\=\hspace*{9.5cm}\= \kill}%
+{\end{tabbing}}
+
+\newenvironment{ndproofsection}[1]%Beweislabel
+{\footnotesize\begin{tabbing}%
+\hspace*{1.1cm}\=\hspace*{2.5cm}\=\hspace*{0.6cm}%
+\=\hspace*{9.5cm}\= \kill}%
+{\end{tabbing}}
+
+\newcommand{\ndproofheader}%
+{No \> S;D \> \> Formula \> Reason\\[0.5ex]
+\rule{\textwidth}{0.5pt}\\[0.5ex]}
+
+\newcommand{\geru}[2]
+{\begin{tabular}{c}{$#1$}\\ \hline{$#2$}\end{tabular}}
+\newcommand{\gentzenrule}[3]
+{{#1}\geru{#2}{#2}}
+\newcommand{\gentzenrulem}[3]
+{\gentzenrule{#1}{$#2$}{$#3$}}
+\def\premdivider{{\;;\;\;}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                     Macros f"ur Methoden
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Methoden sind strukturen mit 5 slots...
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\printmethod{\begin{description}%
+\advance\topsep by -5pt\advance \itemsep by -5pt
+\item[name:]{\tt \methname}%
+\item[status:]\methstatus%
+\item[pre:]\preconditions%
+\item[post:]\postconditions%
+\item[Kb:]\knowlegeBit%
+\item[proc:]\procedure%
+\end{description}}
+
+\newcommand{\methodname}[1]{\long\def\methname{#1}}%
+\newcommand{\methodstatus}[1]{\long\def\methstatus{#1}}%
+\newcommand{\precond}[1]{\long\def\preconditions{#1}}%
+\newcommand{\postcond}[1]{\long\def\postconditions{#1}}%
+\newcommand{\kb}[1]{\long\def\knowlegeBit{#1}}%
+\newcommand{\proc}[1]{\long\def\procedure{#1}}%
+\def\thmnl{\ \linebreak[4]}
+
+\newenvironment{method}%
+{\Defcase\begin{iAuxmethod}}%
+{\thmnl\printmethod\end{iAuxmethod}}
+
+
+
+
+
+
+
+
+
+
+

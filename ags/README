@@ -1,0 +1,6 @@
+This is the most basic system included with KEIM.  It contains mostly
+service-related stuff, keeping tracking of modules, for example, 
+pretty-printing, and documentation.
+
+The subdirectory fasl/ will contain all compiled files for the system.
+The subdirectory tex/  will contain any produced tex files.

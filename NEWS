@@ -1,0 +1,11 @@
+Changes from version 1.0 to version 1.1:
+  sys/defsystem.lisp cleaned up
+  Added support for Allegro Common Lisp 4.2, Lucid 4.1 and
+   Macintosh CL 2.0 (thanks to Espen Vestre)
+  Some general bug fixes all over the place
+  Example resolution prover added in the keim/prog/examples directory,
+   using the resprover.system file.  See the README in that directory.
+
+
+
+  

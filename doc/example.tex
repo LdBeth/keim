@@ -1,0 +1,179 @@
+\documentstyle[11pt,code]{article}
+\input{macros/omega-abbrevs}
+\input{macros/tex-macros}
+\title{Using \protect{\keim}}
+\author{Dan Nesmith}
+\begin{document}
+
+\maketitle
+
+\section{Terms and Environments}
+
+The way to enter a term in \keim\ is to use a specific notation called
+\post.  We'll give some examples below, simplifying things of course to
+get you off the ground.  
+For more details see the
+full \keim\ manual.  
+
+\subsection{The basic ideas}
+
+\post\ is a typed language.  That is, every term has a type, and every
+term must be well-typed.  There are two ``standard'' types, {\tt O} and
+{\tt I}, which stand for the types of propositions and individuals,
+respectively.  Although these have something of a special status, you
+still have to declare them in every environment.  More about that later.
+
+Anyway, we have base or primitive types (such as {\tt O} and {\tt I}) and
+we also have function types.  A function type encodes the range and domain
+of a function.  For example, the function type {\tt (I I)} encodes the
+type of a function which takes an individual as argument and returns an
+individual as result.  The function type {\tt (I I I)} can be thought of
+as the type of a function taking two arguments of type {\tt I}, and returning
+a result of type {\tt I}.   If we use currified types, we would write this
+{\tt ((I I) I)}, but we always associate the parentheses to the left and
+omit as many as possible.  
+
+So far we have been ambiguous.  To be more precise, a type is either a
+\begin{code}
+{\it type} ::= {\it basetype} | {\it functiontype}
+{\it basetype} ::= {\it symbol}.
+{\it functiontype} ::= ({\it range} {\it domain\(_n\)} \ldots {\it domain\(_1\)})
+{\it range} ::= {\it type}.
+{\it domain\(_i\)} ::= {\it type}.
+\end{code}
+
+The function type shown above denotes the function taking arguments (in order)
+of type {\it domain$_1$} through {\it domain$_n$} and returning a value of
+type {\it range}. 
+
+So for another example, a relation on the individuals would have 
+as type {\tt (O I I)}.
+
+We also allow type variables.  A type variable can be used to denote, for
+example, functions that could be thought of as polymorphic, that is, as 
+being applied to more than one type.  Examples are ideas like union and
+intersection of sets, as well as quantifiers (more below).
+
+\subsection{Environments}
+
+An environment is used (mostly) to provide a mapping between the external
+representation of a symbol and its type, so that when we input the formula
+we don't have to write its type with it.  That is, if the symbol {\tt X} is
+already in the environment as a constant of type {\tt I}, we can just
+write {\tt X} in our input form.  For new bound variables, we have to
+write the type. 
+
+We have to explicitly create environments and put our constants in them.
+Creating an environment is done by {\vb (env~create)}.  
+
+To tell the environment that something is a legal type symbol, we say either:
+
+\begin{code}
+(type-variables {\it symbol}*)
+(type-constants {\it symbol}*)
+
+Examples:
+ (type-constants O I)
+ (type-variables AA BB)
+\end{code}
+
+\subsection{Symbols}
+
+Formulas are based on symbols.  You can think of a symbol as a name
+(case-insensitive string) and a type.  We declare symbols to have a
+particular type in an environment by the following forms.
+
+\begin{code}
+{\it declaration} ::= (constants {\it decl}+) |(variables {\it decl}+).
+{\it decl} ::= ({\it name} {\it type}).
+{\it name} ::= {\it symbol}.
+
+Example: (constants (A I) (P (O I I)))
+\end{code}
+
+\subsection{Application}
+
+One way to form terms from symbols is by application.  Application is
+done merely by putting in parentheses first the function and then the
+arguments.  The types of the function and arguments must match, however,
+or an error will be signaled.  For example:
+
+If {\tt A} has type {\tt I}, and {\tt P} has type {\tt (O I)},
+ then {\tt (P A)} is an application
+of type {\tt O}. 
+
+But {\tt (P P)} is not a legal application, because {\tt P}'s argument must be of
+type {\tt I}.
+
+
+A special case is when some of the subterms involved have type variables
+in their types.  Then a matching is done to make sure that the variables
+can be instantiated with concrete types before allowing the term to be
+created.
+
+\subsection{Abstraction}
+
+Abstraction allows us to bind variables.  Like other languages, we use
+a lambda, but we write it {\tt LAM} for short.  {\tt LAM} is a special
+symbol, and you should only use it for binding a variable.
+
+If {\tt A} is a term of type {\tt T$_1$}, and {\tt T$_2$} is
+another valid type, and {\it var} is any symbol name, 
+then the term {\tt (lam ({\it var} T$_2$) A)} is
+a term of type {\tt (T$_1$ T$_2$)}.   While the term is being created,
+{\it var} is temporarily placed in the environment with type {\tt T$_2$},
+and it shadows any occurrence of the same identifier that was already
+in the environment.  That is, in {\vb (lam (X I) (lam (X I) (P X)))}
+the argument of {\tt P} is the innermost bound occurrence of {\tt X}.
+The resulting term is of type {\tt ((O I) I)} or to write it more simply
+{\tt (O I I)}.
+
+\subsection{Quantification}
+
+We can quantify formulas by merely putting a predicate on a set.  For example,
+when we interpret the formula $\forall x (P x)$, we are in effect saying 
+that the set determined by taking the $x$'s for which $P x$ is true is
+everything in the universe.  For $\exists$, it merely says that this set is nonempty.
+
+For our quantification, we therefore 
+take the quantifiers to be predicates on predicates, that is, a quantifier
+takes a single-argument predicate (a function which returns a boolean as
+value) and returns a boolean.  That is, a quantifier has the range type 
+{\tt O}, and its domain type must be of type {\tt (O A)}, for some type
+{\tt A}.  What is {\tt A}?  Well, just as we can think of quantifying
+over all kinds of sets (numbers, people, etc), we want to apply our
+quantifiers as widely as possible.  We let this {\tt A} be a type variable.
+
+That is, we can declare our quantifiers by writing
+\begin{code}
+(constants (forall (O (O AA))) (exists (O (O AA))))
+\end{code}
+assuming that {\tt AA} has been declared as a type variable.
+
+\subsection{Examples}
+
+To actually get the terms to be read, we use the functions 
+{\vb post~read-object-list} and {\vb term~read}.
+
+\begin{code}
+\small
+(in-package :keim) ;make sure we're in the right package
+(setq env (env~create)) ; we create a new environment
+(post~read-object-list '((type-constants O I) (type-variables AA BB)) env)
+; now we have some valid types in the environment,
+; we want to declare some constants.
+(post~read-object-list '((constants (X I) (P (O I)))) env)
+(term~read '(P X) env) 
+(term~read '(P P) env)  ; something illegal because ill-typed
+(term~read '(P W) env)  ; something illegal because W was not declared
+(term~read '(lam (Y I) (P X)) env)
+; how about a quantifier?
+(post~read-object-list '((constants (forall (O (O AA))) 
+                                    (exists (O (O AA))))) env)	
+(term~read '(forall (lam (Y I) (P X))) env)
+
+\end{code}
+
+
+
+\end{document}

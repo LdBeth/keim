@@ -1,0 +1,58 @@
+;;; -*- syntax: common-lisp; package: user; base: 10; mode: lisp -*-
+
+(in-package #-symbolics :user #+symbolics :fcl-user)
+
+(unless (mk::find-system 'ags)
+  (mk::find-system 'ags :load))
+
+
+(unless (find-package "KEIM")
+  (make-package "KEIM" :use (cons (find-package "AGS") 
+				  (package-use-list (find-package "AGS")))))
+
+
+(defvar *base-keim-top-dir* (concatenate 'string *keim-top-dir* 
+					 "prog" *dir-sep* "base" *dir-sep*))
+
+(defvar *base-keim-repair-file* (concatenate 'string *base-keim-top-dir* 
+					"repair.lisp"))
+
+(mk:defsystem base-keim
+    :depends-on (ags)
+    :initially-do (unless (find-package "KEIM")
+		    (make-package "KEIM" :use (cons (find-package "AGS") 
+				  (package-use-list (find-package "AGS")))))
+    :finally-do (pushnew :base-keim *features*)
+    :source-pathname *base-keim-top-dir*
+    :source-extension nil
+    :binary-pathname nil
+    :binary-extension nil
+    :binary-root-dir *keim-binary-dir*
+    :tex-root-dir *keim-tex-dir*
+    :components
+    ((:module KEIM :depends-on ()
+	      :source-pathname ""
+	      :components ((:file "keim")))
+     (:module HELP :depends-on (KEIM) 
+	      :source-pathname ""
+	      :components ((:file "help")))
+     (:module ENV :depends-on (HELP) 
+	      :source-pathname ""
+	      :components ((:file "env")))
+     (:module POST :depends-on (ENV) 
+	      :source-pathname ""
+	      :components ((:file "post")))))
+
+
+(defun base-keim-startup ()
+  (in-package "KEIM")
+  (fresh-line)
+  (when (probe-file *base-keim-repair-file*)
+    (load *base-keim-repair-file*))
+  (values))
+
+(defun base-keim-dump (filename)
+  (funcall (symbol-function (find-symbol "SYS~DUMP-SYSTEM" 
+					 (find-package "AGS")))
+	   'base-keim filename 'base-keim-startup))
+

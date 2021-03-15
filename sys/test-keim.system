@@ -1,0 +1,42 @@
+;;; -*- syntax: common-lisp; package: user; base: 10; mode: lisp -*-
+
+(in-package #-symbolics :user #+symbolics :fcl-user)
+
+(unless (mk::find-system 'ags)
+  (mk::find-system 'ags :load))
+
+(defvar *test-keim-top-dir* 
+  (concatenate 'string *keim-top-dir* "prog" *dir-sep* "test-keim" *dir-sep*))
+
+(defvar *test-keim-repair-file* (concatenate 'string *test-keim-top-dir* 
+					     "repair.lisp"))
+
+(mk:defsystem test-keim
+    :depends-on (resolution inter nd)
+    :finally-do (pushnew :test-keim *features*)
+    :source-pathname *test-keim-top-dir*
+    :source-extension nil
+    :binary-pathname nil
+    :binary-extension nil
+    :binary-root-dir *keim-binary-dir*
+    :tex-root-dir *keim-tex-dir*
+    :components
+    ((:module TEST :depends-on () 
+	      :source-pathname ""
+	      :components ((:file "test")))
+     ))
+
+
+
+(defun test-keim-startup ()
+  (in-package "KEIM")
+  (fresh-line)
+  (when (probe-file *test-keim-repair-file*)
+    (load *test-keim-repair-file*))
+  (values))
+
+(defun test-keim-dump (filename)
+  (funcall (symbol-function (find-symbol "SYS~DUMP-SYSTEM" 
+					 (find-package "AGS")))
+	   'test-keim filename 'test-keim-startup))
+

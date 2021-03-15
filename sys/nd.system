@@ -1,0 +1,43 @@
+;;; -*- syntax: common-lisp; package: user; base: 10; mode: lisp -*-
+
+(in-package #-symbolics :user #+symbolics :fcl-user)
+
+(unless (mk::find-system 'ags)
+  (mk::find-system 'ags :load))
+
+(defvar *nd-top-dir* (concatenate 'string *keim-top-dir* 
+				  "prog" *dir-sep* "nd" *dir-sep*))
+
+(defvar *nd-repair-file* (concatenate 'string *nd-top-dir* "repair.lisp"))
+
+(mk:defsystem nd
+    :depends-on (problem)
+    :finally-do (pushnew :nd *features*) 
+    :source-pathname *nd-top-dir*
+    :source-extension nil
+    :binary-pathname nil
+    :binary-extension nil
+    :binary-root-dir *keim-binary-dir*
+    :tex-root-dir *keim-tex-dir*
+    :components
+    ((:module ND
+	      :depends-on nil
+	      :source-pathname ""
+	      :components ((:file "nd")))
+     (:module RULE
+	      :depends-on (ND) 
+	      :source-pathname ""
+	      :components ((:file "rule")))
+     ))
+
+(defun nd-startup ()
+  (in-package "KEIM")
+  (fresh-line)
+  (when (probe-file *nd-repair-file*)
+    (load *nd-repair-file*))
+  (values))
+
+(defun nd-dump (filename)
+  (funcall (symbol-function (find-symbol "SYS~DUMP-SYSTEM" 
+					 (find-package "AGS")))
+	   'nd filename 'nd-startup))

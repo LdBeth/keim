@@ -1,0 +1,83 @@
+;;; -*- syntax: common-lisp; package: user; base: 10; mode: lisp -*-
+
+(in-package #-symbolics :user #+symbolics :fcl-user)
+
+(unless (mk::find-system 'ags)
+  (mk::find-system 'ags :load))
+
+(defvar *term-top-dir* (concatenate 'string *keim-top-dir* "prog" *dir-sep*
+				    "term" *dir-sep*))
+
+(defvar *term-repair-file* 
+  (concatenate 'string *term-top-dir* "repair.lisp"))
+
+(mk:defsystem term
+    :depends-on (base-keim)
+    :finally-do (pushnew :term *features*)
+    :source-pathname *term-top-dir*
+    :source-extension nil
+    :binary-pathname nil
+    :binary-extension nil
+    :binary-root-dir *keim-binary-dir*
+    :tex-root-dir *keim-tex-dir*
+    :components
+    ((:module TYPE :depends-on () 
+	      :source-pathname ""
+	      :components ((:file "type")))
+     (:module POS :depends-on () 
+	      :source-pathname ""
+	      :components ((:file "position")))
+     (:module SHSYM :depends-on (TYPE) 
+	      :source-pathname ""
+	      :components ((:file "symbol")))
+     (:module TERM :depends-on (pos shsym type)
+	      :source-pathname ""
+	      :components ((:file "term-basic")))
+     (:module SYM :depends-on (shsym term type)
+	      :source-pathname ""
+	      :components ((:file "sym")))
+     (:module APPL :depends-on (term type)
+	      :source-pathname ""
+	      :components ((:file "appl")))
+     (:module ABSTR :depends-on (sym term type)
+	      :source-pathname ""
+	      :components ((:file "abstr")))
+     (:module SKSYM :depends-on (sym term type)
+	      :source-pathname ""
+	      :components ((:file "sksym")))
+     (:module TERMC :depends-on (abstr appl shsym sym term type)
+	      :source-pathname ""
+	      :components ((:file "term-comp")))
+     (:module TERMIX :depends-on (term)
+	      :source-pathname ""
+	      :components ((:file "term-mixin")))
+     (:module POLY :depends-on (TERM SHSYM TYPE) 
+	      :source-pathname ""
+	      :components ((:file "poly")))
+     (:module META :depends-on (TYPE TERM POLY SHSYM) 
+	      :source-pathname ""
+	      :components ((:file "meta")))
+     (:module FO :depends-on (TERM TYPE) 
+	      :source-pathname ""
+	      :components ((:file "fo")))
+     (:module TOP :depends-on (TERM TYPE POS) 
+	      :source-pathname ""
+	      :components ((:file "top")))
+     (:module HOP :depends-on (TYPE TERM TOP POS) 
+	      :source-pathname ""
+	      :components ((:file "ho-op")))
+     (:module SUBST :depends-on (TYPE TERM TOP) 
+	      :source-pathname ""
+	      :components ((:file "subst")))))
+
+(defun term-startup ()
+  (in-package "KEIM")
+  (fresh-line)
+  (when (probe-file *term-repair-file*)
+    (load *term-repair-file*))
+  (values))
+
+(defun term-dump (filename)
+  (funcall (symbol-function (find-symbol "SYS~DUMP-SYSTEM" 
+					 (find-package "AGS")))
+	   'term filename 'term-startup))

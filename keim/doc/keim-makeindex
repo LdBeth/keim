@@ -1,0 +1,3 @@
+#!/bin/csh -f
+
+makeindex -s manual.isty  $*:q

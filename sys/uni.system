@@ -1,0 +1,41 @@
+;;; -*- syntax: common-lisp; package: user; base: 10; mode: lisp -*-
+
+(in-package #-symbolics :user #+symbolics :fcl-user)
+
+(unless (mk::find-system 'ags)
+  (mk::find-system 'ags :load))
+
+(defvar *uni-top-dir* (concatenate 'string *keim-top-dir* "prog" *dir-sep*
+				   "uni" *dir-sep*))
+
+(defvar *uni-repair-file* (concatenate 'string *uni-top-dir* "repair.lisp"))
+
+(mk:defsystem uni
+    :depends-on (term)
+    :finally-do (pushnew :uni *features*)
+    :source-pathname *uni-top-dir*
+    :source-extension nil
+    :binary-pathname nil
+    :binary-extension nil
+    :binary-root-dir *keim-binary-dir*
+    :tex-root-dir *keim-tex-dir*
+    :components
+    ((:module UNI :depends-on () 
+	      :source-pathname ""
+	      :components ((:file "unif")))
+     ))
+
+
+
+(defun uni-startup ()
+  (in-package "KEIM")
+  (fresh-line)
+  (when (probe-file *uni-repair-file*)
+    (load *uni-repair-file*))
+  (values))
+
+(defun uni-dump (filename)
+  (funcall (symbol-function (find-symbol "SYS~DUMP-SYSTEM" 
+					 (find-package "AGS")))
+	   'uni filename 'uni-startup))
+

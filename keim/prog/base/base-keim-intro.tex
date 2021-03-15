@@ -1,0 +1,26 @@
+\section{The basic functionality of \keim}
+
+The {\tt base-keim} system provides the basic functionality 
+for all \keim\ objects. 
+
+The {\tt keim} module defines the classes {\tt keim+object} which is 
+a superclass of all other \keim\ classes
+and {\tt keim+name} which is a superclass of all named \keim\ classes.  
+
+It is a basic design decision, that all \keim\ objects can be written and read in plain ASCII format in a
+common \post\ representation. \post\ is intended to be the lingua 
+franca for all \keim\ applications. The
+intention of \post\ is that it is easy to parse by recursive \lisp\ functions rather that to be  easily
+readable by humans. Therefore \post\ syntax is close to \lisp\ syntax so 
+that it can be read by
+the \lisp\ reader.
+
+\keim\ provides a facility that allows to attach on-line help 
+information to all \keim\ objects. This
+functionality is is provided by the {\tt help} module.
+
+The {\tt env} module provides an abstract possibility to keep track of 
+objects by their names or other \lisp\
+keys. One prominent example for this is the association of 
+term variables and contants with their name.
+

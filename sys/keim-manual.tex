@@ -1,0 +1,49 @@
+\documentstyle[psfig,code,makeidx,fancyheadings]{report}
+
+\pagestyle{headings}
+\makeindex
+
+\hoffset-1.55cm
+\voffset-0.55cm
+
+
+\textheight23cm\textwidth17cm
+\oddsidemargin2cm\evensidemargin2cm
+\topmargin2cm\headheight12pt\headsep1cm
+\parskip1ex plus 2pt\parindent0em
+\tabcolsep5mm\raggedbottom
+
+\pagestyle{fancyplain}
+\headrulewidth0pt
+\rhead{\fancyplain{\thepage}{\thepage}}
+\cfoot{\fancyplain{\today}{\today}}
+
+
+
+\input{/home/omega/distrib/doc/macros/omega-abbrevs}
+\input{/home/omega/distrib/doc/macros/tex-macros}
+\input{/home/omega/distrib/doc/macros/omega-macros}
+\begin{document}
+\hyphenation{IN-NER--SUBS-TI-TU-TION OUT-TER--SUBS-TI-TU-TION SUBS-TI-TU-TION
+             SHARE-SYM RE-PLACE--FREE--VARIABLES--AND--RE-NAME}
+\author{The \keim-Group\\
+Fachbereich Informatik, Universit\"at des Saarlandes\\
+Postfach 1150\\
+D-66041 Saarbruecken\\
+Germany \\    
+{\tt keim@cs.uni-sb.de}\\[2cm]}
+
+\title{\mbox{KEIM Manual}}
+\maketitle
+
+\input{/home/omega/distrib/keim/tex/uni-chapter.tex}
+\input{/home/omega/distrib/keim/tex/resolution-chapter.tex}
+\input{/home/omega/distrib/keim/tex/inter-chapter.tex}
+\input{/home/omega/distrib/tex/ags-chapter.tex}
+\input{/home/omega/distrib/keim/tex/base-keim-chapter.tex}
+\input{/home/omega/distrib/keim/tex/term-chapter.tex}
+\input{/home/omega/distrib/keim/tex/problem-chapter.tex}
+\input{/home/omega/distrib/keim/tex/nd-chapter.tex}
+\input{keim-chapter.tex}
+\tiny\printindex
+\end{document}

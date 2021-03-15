@@ -1,0 +1,29 @@
+\section{Introduction}
+
+This will be the introduction to the \keim\  facility for proofs in the 
+natural deduction format.
+
+There are two modules in this system.  The first, called {\tt ND} and found in 
+{\tt nd.lisp}, defines the basic functionality of the natural deduction
+class of objects.   
+
+Natural deduction proofs are represented as a collection of lines, each line
+having an associated formula.  Each line has as well a list of hypotheses
+from which it is logically dependent, in addition to a justification. 
+A justification may still be {\em planned\/}, indicating that
+the line has yet to be {\em proven}.  In a line which has been proven,
+this justification will show through which inference rule and from which
+preceding lines the line was derived.
+
+The module {\tt RULE}, found in {\tt rule.lisp}, defines how inference rules
+can be defined and used.  An inference rule defines a schema which can be
+match to existing lines in a proof and cause the creation of new lines
+and/or the justification of old lines. 
+
+There are some sample rule definitions to be found in the file {\tt
+rule-examples.lisp}.
+
+Our natural deduction proofs are greatly influenced by those used in the
+TPS system from Peter Andrews. 
+
+
