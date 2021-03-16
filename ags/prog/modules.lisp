@@ -113,7 +113,7 @@ A {\vb MOD~DEFMOD} form should be placed at the beginning of each module file.
 
 
 (defmethod initialize-instance :after ((new-mod mod+module) &key)
-  (declare (special mk:*current-component*))
+  ; (declare (special mk:*current-component*))
   (let* ((new-mod
 	  (let* ((pre-mod
 		  (mod~find-module (mod=module-name new-mod))))
@@ -126,7 +126,7 @@ A {\vb MOD~DEFMOD} form should be placed at the beginning of each module file.
 		(mod=module-exports new-mod))
 	      (setq new-mod pre-mod))
 	    new-mod)))
-    (setf (mod=component new-mod) mk:*current-component*)
+    ; (setf (mod=component new-mod) mk:*current-component*)
     (pushnew new-mod mod*loaded-modules)
     (dolist (mod (mod=module-uses new-mod))
       (unless (mod~find-module mod)
@@ -168,6 +168,7 @@ module.")
 	     mod+module))
 )
 
+#+comment
 (defun mod~load-module (module-name 
 			&key (compile-if-source-newer 
 				 mod*compile-if-source-newer)
@@ -205,7 +206,7 @@ the file cannot be found."))
 		  (t :new-source))
 	    ))))))
 
-
+#+comment
 (defun mod~compile-module (module-name &key (verbose *load-verbose*))
   (declare (edited  "10-JUN-1992 03:06")
 	   (authors NESMITH)

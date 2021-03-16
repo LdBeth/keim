@@ -1,0 +1,2 @@
+This dir constains old system definition files.
+Now we use ASDF for loading the system.

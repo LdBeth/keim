@@ -99,7 +99,7 @@ list of the function's methods will be returned.")
 (defmethod sys~generic-function-methods ((fun generic-function))
   (clos:generic-function-methods fun))
 
-#+ccl-2
+#+ccl
 (defmethod sys~generic-function-methods ((fun generic-function))
   (ccl:generic-function-methods fun))
 
@@ -134,7 +134,7 @@ function's name will be returned.")
 (defmethod sys~generic-function-name ((fun generic-function))
   (clos:generic-function-name fun))
 
-#+ccl-2
+#+ccl
 (defmethod sys~generic-function-name ((fun generic-function))
   (ccl:function-name fun))
 
@@ -169,7 +169,7 @@ function's lambda-list will be returned.")
 (defmethod sys~generic-function-lambda-list ((fun generic-function))
   (clos:generic-function-lambda-list fun))
 
-#+ccl-2
+#+ccl
 (defmethod sys~generic-function-lambda-list ((fun generic-function))
   (ccl:arglist fun))
 
@@ -198,7 +198,7 @@ function's lambda-list will be returned.")
 (defmethod sys~method-specializers ((method standard-method))
   (clos:method-specializers method))
 
-#+ccl-2
+#+ccl
 (defmethod sys~method-specializers ((method standard-method))
   (ccl:method-specializers method))
 
@@ -227,7 +227,7 @@ function's lambda-list will be returned.")
 (defmethod sys~class-precedence-list ((class class))
   (clos:class-precedence-list class))
 
-#+ccl-2
+#+ccl
 (defmethod sys~class-precedence-list ((class class))
   (ccl:class-precedence-list class))
 
@@ -279,7 +279,7 @@ When we need to somehow do things outside of this lisp, here's how.
   #+(or allegro-v4.1 allegro-v4.2) (excl:exit)
   #+:cmu17 (ext:quit)
   #+:cmu16e (ext:quit)
-  #+ccl-2 (ccl:quit)
+  #+ccl (ccl:quit)
   #-(or lcl4.0 :lcl4.1 allegro-v4.1 allegro-v4.2 :cmu17 :cmu16e ccl-2)
   (error "Don't know how to exit from lisp.  Sorry.")
   )
@@ -331,7 +331,7 @@ funcallable startup-function")
   (error "Don't know how to dump Symbolics.")
   #-symbolics
   (progn
-    (mk:operate-on-system system :load :verbose t)
+    ;; (mk:operate-on-system system :load :verbose t)
   #+(or lcl4.0 :lcl4.1)
   (lcl:disksave filename
 		  :restart-function startup-function
@@ -352,7 +352,7 @@ funcallable startup-function")
 	 (ext:save-lisp filename
 			:init-function startup-function :print-herald nil)
 	 )
-  #+ccl-2
+  #+ccl
   (ccl:save-application filename :toplevel-function startup-function)
   ))
 
@@ -387,7 +387,7 @@ funcallable startup-function")
 (eval-when (load compile eval)
   ;; :keim-clos-conditions version should be good for ANSI-compatible Lisps,
   ;; that is, those that have the condition system integrated with CLOS
-  #+(or allegro-v4.1 allegro-v4.2 ccl-2)
+  #+(or allegro-v4.1 allegro-v4.2 ccl)
   (pushnew :keim-clos-conditions *features*)
   ;; :keim-defstruct-conditions is for Lisps that conform to the Pitman 
   ;; specification, before it was decided to merge condition system into 

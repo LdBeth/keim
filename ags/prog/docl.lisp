@@ -1172,7 +1172,8 @@
 			       (CDR OPTION)))
 		      (:PPRINT
 			(FORMAT DOC-STREAM "~&\\item [:pprint\\hfill]~[dummy~; non-standard~; ~(~A~) non-standard~]~%"
-				(LENGTH (CDR OPTION))
+              (LENGTH (CDR OPTION))
+              (cadr option)
 				))
 		      (:CONSTRUCTOR
 			(FORMAT DOC-STREAM "~&\\item [:constructor\\hfill] ~(~A~)~%" (DOCL=SYMBOL-LATEX (SECOND OPTION)))

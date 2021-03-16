@@ -145,7 +145,7 @@
 			    ;; Documentation
 			    (DOCA=PRINT-DOC-FUN DEFNAME DEFLL (doca=SYS-DECLARATIONS DEFBODY) DOC-STREAM DOC-KEYS
 					       (doca=DOCUMENTATION-STRINGS DEFBODY))))))
-		     ((user::defclass DEFCLASS)
+		     ((defclass)
 		      (DOCa=PRINT-CLASS-LATEX DEFINITION DOC-STREAM))
 		     ((defun-documentation defclass-documentation defsubst-documentation defmacro-documentation)
 		      (setq doca*comment-format :both)
