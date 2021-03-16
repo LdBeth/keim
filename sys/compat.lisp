@@ -7,6 +7,8 @@
 
 (declaim (declaration edited authors input effect value remark example))
 
+(export '(edited authors input effect value remark example))
+
 (defmacro ags::doc~latex (&rest args)
   (declare (ignore args))
   (values))
@@ -93,11 +95,9 @@
 
   (set-dispatch-macro-character #\# #\{ #'|#{-reader| *ags-readtable*)
 
-  (setq *readtable* *ags-readtable*)
+  ; (setq *readtable* *ags-readtable*)
 
   (dolist (fun '(read-latex-string |#{-reader| init-read-buffer
 				   read-buffer-to-string grow-read-buffer))
     (compile fun))
   )
-
-(setq *readtable* *ags-readtable*)

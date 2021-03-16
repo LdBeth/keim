@@ -383,8 +383,8 @@ We define
   (let ((result (some #'(lambda (dir)
 			  (probe-file (make-pathname  :directory dir
 						      :name (string-downcase sym)
-						      :type "system")))
-		      mk::*central-registry*)))
+						      :type "asd")))
+		      asdf:*central-registry*)))
     (if result t nil)))
 
 (defmethod argdefs~read-existing-system ((obj symbol) &rest others)
