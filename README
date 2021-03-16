@@ -1,0 +1,9 @@
+K E I M
+=======
+
+This is based on KEIM 1.1 from CMU AI Repository.
+
+It has been adapted to be ASDF loadable.
+
+See keim.README for original distribution infos and licence.
+
