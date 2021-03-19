@@ -1,7 +1,7 @@
 ;;; -*- syntax: common-lisp; package: keim; base: 10; mode: lisp -*-
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ;;
 ;;                                                                          ;;
-;;   Copyright (C) 1993 by AG Siekmann, Fachbereich Informatik,             ;;
+;;   Copyright (C) 1996 by AG Siekmann, Fachbereich Informatik,             ;;
 ;;   Universitaet des Saarlandes, Saarbruecken, Germany.                    ;;
 ;;   All rights reserved.                                                   ;;
 ;;   For information about this program, write to:                          ;;
@@ -142,61 +142,64 @@ will be returned, otherwise NIL."))
 
 
 
-(defmethod initialize-instance :after ((obj help+help) &rest initargs)
-  (declare (ignore initargs))
+(defmethod shared-initialize :after ((obj help+help) slot-names &rest initargs)
+  (declare (ignore initargs slot-names))
   (setf (help=help obj) (help=normalize-help-string (help=help obj)))
   (help=insert (keim~name obj) obj)
   obj)
 
 
 (defun help=normalize-help-string (string)
-  (declare 
-   (authors nesmith)
-   (input "a string")
-   (effect "none")
-   (value "the input string has all extra spaces removed, all newlines and tabs
-are replaced by spaces, and new string is returned"))
-  (labels ((remove-double-space (str char)
-	     (cond ((zerop (length str)) (string char))          
-		   ((and (char= #\space char) 
-			 (char= #\space (char str (1- (length str)))))
-		    str)
-		   (t (concatenate 'string str (string char)))))
-	   (add-space-after-punct (string)
-	     (if (member (char string (1- (length string)))
-			 '(#\, #\. #\; #\?)
-			 :test #'char=)
-		 (concatenate 'string string " ")
-	       string))
-	   (split-string (string)
-	     (let ((res nil))
-	       (do* ((string 
-		      (reduce #'remove-double-space
-			      (substitute-if #\space 
-					     #'(lambda (ch)
-						 (member ch '(#\tab #\newline)
-							 :test #'char=))
-					     string)
-			      :initial-value "")
-		      (subseq string (1+ n)))
-		     (n (position-if #'(lambda (ch) 
-					 (member ch '(#\space #\. #\, #\; #\?)
-						 :test #'char=))
-				     string)
-			(position-if #'(lambda (ch) 
-					 (member ch '(#\space #\. #\, #\; #\?)
-						 :test #'char=))
-				     string)))
-		   ((not n) (mapcar #'add-space-after-punct
-				    (delete " "
-					    (nreverse 
-					     (if (zerop (length string))
-						 res
-					       (push string res)))
-					    :test #'string-equal)))
-		 (push
-		  (subseq string 0 (1+ n))
-		  res)))))
-  (let ((newstrings (split-string string)))
-    (apply #'concatenate 'string newstrings))
-  ))
+  string)
+;  (declare 
+;   (authors nesmith)
+;   (input "a string")
+;   (effect "none")
+;   (value "the input string has all extra spaces removed, all newlines and tabs
+;are replaced by spaces, and new string is returned"))
+;  (labels ((remove-double-space (str char)
+;             (cond ((zerop (length str)) (string char))          
+;                   ((and (char= #\space char) 
+;                         (char= #\space (char str (1- (length str)))))
+;                    str)
+;                   (t (concatenate 'string str (string char)))))
+;           (add-space-after-punct (string)
+;             (if (member (char string (1- (length string)))
+;                         '(#\, #\. #\; #\?)
+;                         :test #'char=)
+;                 (concatenate 'string string " ")
+;               string))
+;           (split-string (string)
+;             (let ((res nil))
+;               (do* ((string 
+;                      (reduce #'remove-double-space
+;                              (substitute-if #\space 
+;                                             #'(lambda (ch)
+;                                                 (member ch '(#\tab #\newline)
+;                                                         :test #'char=))
+;                                             string)
+;                              :initial-value "")
+;                      (subseq string (1+ n)))
+;                     (n (position-if #'(lambda (ch) 
+;                                         (member ch '(#\space #\. #\, #\; #\?)
+;                                                 :test #'char=))
+;                                     string)
+;                        (position-if #'(lambda (ch) 
+;                                         (member ch '(#\space #\. #\, #\; #\?)
+;                                                 :test #'char=))
+;                                     string)))
+;                   ((not n) (mapcar #'add-space-after-punct
+;                                    (delete " "
+;                                            (nreverse 
+;                                             (if (zerop (length string))
+;                                                 res
+;                                               (push string res)))
+;                                            :test #'string-equal)))
+;                 (push
+;                  (subseq string 0 (1+ n))
+;                  res)))))
+;    (let ((newstrings (split-string string)))
+;      (apply #'concatenate 'string newstrings)   
+;      )))
+  
+

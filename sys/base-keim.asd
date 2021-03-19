@@ -9,5 +9,5 @@
    (:file "keim")
    (:file "help")
    (:file "env")
-   (:file "post")))
-
+   (:file "post")
+   (:file "position")))

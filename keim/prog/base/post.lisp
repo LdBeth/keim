@@ -1,7 +1,7 @@
 ;;; -*- syntax: common-lisp; package: keim; base: 10; mode: lisp -*-
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ;;
 ;;                                                                          ;;
-;;   Copyright (C) 1993 by AG Siekmann, Fachbereich Informatik,             ;;
+;;   Copyright (C) 1996 by AG Siekmann, Fachbereich Informatik,             ;;
 ;;   Universitaet des Saarlandes, Saarbruecken, Germany.                    ;;
 ;;   All rights reserved.                                                   ;;
 ;;   For information about this program, write to:                          ;;
@@ -43,36 +43,38 @@
 			   post~pprint
 			   post~print-declaration
 			   post~error
+			   post~all-types-checker
 			   )
 		 )
 
-#{\section{\post\ input and output}
-\subsection{\post\ input}
-\post\ (cf. Appendix \ref{sec:postsyntax}) is the machine-oriented lingua franca for \keim. It is intended that any
-\keim\ object has an ASCII representation (its \post\ representation) that can be written to a file and read
-from it. Thus the \post\ representation of internal \keim\ objects is always there as a fallback strategy for
-data exchange. This has proven very valuable for developing \keim\ and first \keim\ applications.
-It is strongly advised for implementors of  extensions and applications of \keim\ to define \post\
+#{\section{{\post} input and output}
+\subsection{{\post} input}
+{\post} is the machine-oriented lingua franca for \keim. It is intended that any
+{\keim} object has an ASCII representation (its {\post} representation) that can be written to a file and read
+from it. Thus the {\post} representation of internal {\keim} objects is always there as a fallback strategy for
+data exchange. This has proven very valuable for developing {\keim} and first {\keim} applications.
+It is strongly advised for implementors of  extensions and applications of {\keim} to define {\post}
 representations for all objects and specialize the generic functions defined in this module to the newly
-defined classes. It is an explicit design decision of \keim\ that \post\ syntax conforms with \lisp\ syntax, so
-that \post\ files can be read
- with the \lisp\ reader and then interpreted by {\vb POST~READ-OBJECT}.
+defined classes. It is an explicit design decision of {\keim} that {\post} syntax conforms with {\lisp} syntax, so
+that {\post} files can be read
+ with the {\lisp} reader and then interpreted by {\vb POST~READ-OBJECT}.
 
-Every \post\ object should have a Lisp input form, suitable for reading into \keim. This module defines the
-functions which perform this input; it does not define the \post\ forms themselves.  Those definitions, in the
+Every {\post} object should have a Lisp input form, suitable for reading into \keim. This module defines the
+functions which perform this input; it does not define the {\post} forms themselves.  Those definitions, in the
 form of methods, are spread among the various modules which define the objects themselves. For this we have
-provided a set of \LaTeX\ macros, they should be used in the code in the following form
+provided a set of {\LaTeX} macros, they should be used in the code in the following form
 
 \begin{verbatim}
 \begin{postsyntax}
 \syntax{\nt{clause} ::= (clause \nt{head} \{\nt{literal}\}*).
  \nt{ende}.}
 \syntaxcomment{Some crazy comment goes here, but it is optional}
-\syntax{\nt{END}.
+\syntax{\nt{END}.}
 end{postsyntax}
 \end{verbatim}
 
-The BNF notation here has the meaning 
+The BNF notation here has the meaning
+
 \begin{tabular}{r@{ stands for }l}
 {\tt ::=} & definition      \\
 {\tt |} & or                \\
@@ -82,6 +84,7 @@ The BNF notation here has the meaning
 {\tt +}   & repetition $\geq1$  \\
 {\tt .}   & end of rule
 \end{tabular}
+
 {\it Non-terminal symbols} will be written in italic whereas the {\tt terminal symbols} will be displayed in
 the typewriter font.  
 
@@ -96,7 +99,7 @@ The macro {\vb $\backslash$postindex} will write its argument into
 an index.
 
 
-The main \post\ input function is {\vb POST~READ-OBJECT}.  It converts a Lisp form into an object of the
+The main {\post} input function is {\vb POST~READ-OBJECT}.  It converts a Lisp form into an object of the
 proper type based on the keyword indicator (the indicator is the principal way methods are specialized).  If
 the indicator is NIL, then if the Lisp form is a list, its first element (interned into the keyword package)
 is used as the indicator.  {\vb POST~READ-OBJECT-LIST} applies {\vb POST~READ-OBJECT} to each element in a
@@ -108,19 +111,19 @@ Here's an example of how this proceeds:
 (post~read-object '(position 1 2 3) env nil) ->
 (post~read-object '(1 2 3) env :position)
 \end{verbatim}
-For \keim\ objects, where the \post\ representation does not begin (e.g. terms, types,\ldots) with a keyword
+For {\keim} objects, where the {\post} representation does not begin (e.g. terms, types,\ldots) with a keyword
 the indicator has to be known or guessed. Use the functions {\vb post~indicators} or {\vb post~print-indicators}
 to obtain a list of all possible indicators of the system.
 
-The convention for defining \post\ Syntax is the following set of rules:
+The convention for defining {\post} Syntax is the following set of rules:
 \begin{itemize}
 \item Structured objects should be lists, where the CAR is a keyword (usually the name of the object) and the
 subsequent items correspond to the constructive parts of the object.
 \item Objects that are recursively defined (like types and terms) should not begin with a keyword, since
 otherwise the concrete syntax gets big and unwieldy  
 \item Components without keyword of structured objects have to be distinguished by their position in the
-\post\ list representation.
-\item Concrete \post\ syntax should have enough keywords to be readable by humans
+{\post} list representation.
+\item Concrete {\post} syntax should have enough keywords to be readable by humans
 \end{itemize}
 #}
 
@@ -128,11 +131,11 @@ otherwise the concrete syntax gets big and unwieldy
 (defgeneric post~read-object (thing env indicator)
   (declare (edited  "9-Feb-1993")
 	   (authors nesmith)
-	   (input   "An object to be interpreted as a POST object, usually
-written in a Lisp list syntax; an environment ENV; and a keyword symbol INDICATOR
-which indicates what kind of object the reader is expecting.  If INDICATOR
-is null, and the object is a list, then the first element of the list is
-taken as the INDICATOR.")
+	   (input   "An object to be interpreted as a POST object, usually"
+		    "written in a Lisp list syntax; an environment ENV; and a keyword symbol INDICATOR"
+		    "which indicates what kind of object the reader is expecting.  If INDICATOR"
+		    "is null, and the object is a list, then the first element of the list is"
+		    "taken as the INDICATOR.")
 	   (effect  "The object is constructed based on the POST syntax.")
 	   (value   "Whatever the various methods return. In general, terms 
 and larger structures should be returned, but declarations of symbols will
@@ -150,12 +153,10 @@ generally return nil."))
 (defun post~read-object-list (list env)
   (declare (edited  "9-Feb-1993")
 	   (authors nesmith)
-	   (input   "A list of expressions to be interpreted as POST objects 
-and an environment.")
-	   (effect  "The objects are constructed in turn based on their 
-POST syntax.  Merely calls post~read-object for each element of the list.")
-	   (value   "All non-nil results of the individual calls to 
-post~read-object."))
+	   (input   "A list of expressions to be interpreted as POST objects and an environment.")
+	   (effect  "The objects are constructed in turn based on their POST syntax."
+		    "Merely calls post~read-object for each element of the list.")
+	   (value   "All non-nil results of the individual calls to post~read-object."))
   (let ((returns nil))
     (dolist (thing list (nreverse (delete-if #'null returns)))
       (push (post~read-object thing env nil) returns))))
@@ -185,7 +186,7 @@ same as post~read-object-list and is defined only for backward compatibility.")
 	   (value "A Lisp symbol if this THING can be so interpreted."))
   (post~read-object thing env :symbol))
 
-#{It is always a problem to know the valid indicators for {\vb post~read-object} and {\vb post~read-object-list} therefore \keim\ provides the following functions.#}
+#{It is always a problem to know the valid indicators for {\vb post~read-object} and {\vb post~read-object-list} therefore {\keim} provides the following functions.#}
 
 (defun post~indicators ()
   (declare (edited  "20-AUG-1993 10:48")
@@ -194,12 +195,12 @@ same as post~read-object-list and is defined only for backward compatibility.")
 	   (effect "None.")
 	   (value  "A list of all valid indicators for POST~READ-OBJECT an POST~READ-OBJECT-LIST."))
   (delete-duplicates
-   (mapcar #'second
-	   (delete-if-not #'consp
+   (mapcar #'eql-specializer-object
+	   (remove-if-not #'eql-specializer-p
 			  (mapcar #'(lambda (method)
 				      (third (sys~method-specializers method)))
-				  (sys~generic-function-methods 'post~read-object))))
-   :test #'(lambda (symbol1 symbol2) (string-equal (symbol-name symbol1) (symbol-name symbol2)))))
+				  (sys~generic-function-methods 'post~read-object))))))
+
 
 (defun post~print-indicators (&optional (stream t))
   (declare (edited  "20-AUG-1993 10:58")
@@ -209,8 +210,8 @@ same as post~read-object-list and is defined only for backward compatibility.")
 	   (value  "Undefined."))
   (format stream "~S" (post~indicators)))
 
-#{\subsection{\post\ output}
-Each \post\ object should be able to be printed out in a form, such that it 
+#{\subsection{{\post} output}
+Each {\post} object should be able to be printed out in a form, such that it 
 later can be read in again. {\vb POST~PRINT} is the main function which
 does this.#}
 
@@ -263,7 +264,7 @@ output will be to *standard-output*.")
 	   (value   "No values."))
   (pprint (read-from-string (post~string object)) stream))
 
-#{Some \keim\ objects (like variables) require different \post\ representations, when they occur in other
+#{Some {\keim} objects (like variables) require different {\post} representations, when they occur in other
 objects and when they are declared. {\vb POST~PRINT} only prints the declaration of the representation
 for normal occurrence whereas {\vb POST~PRINT-DECLARATION} prints the representation for declarations.  
 
@@ -291,17 +292,18 @@ KEIM(6): (post~print-declaration var nil)
 	   (effect  "The POST Representation of the declaration of OBJECT is printed.")
 	   (value   "Like in format a string if STREAM is NIL or NIL else."))
   (:method ((object t) stream)
-      (declare (ignore stream key-list))
-    (error "(KEIM) post~print: There is no POST-Representation for the declaration of ~A. (Or at least no method printing it.)" object))
+	   (declare (ignore stream key-list))
+	   (error "(KEIM) post~~print: There is no POST-Representation for the declaration of ~A. (Or at least no method printing it.)" object))
   (:method ((object-list list) stream)
-      (when object-list
-	(post~print-declaration (first object-list) stream)
-	(mapc #'(lambda (object)
-		  (format stream " ")
-		  (post~print-declaration object stream))
-	      (rest object-list)))))
+	   (when object-list
+	     (post~print-declaration (first object-list) stream)
+	     (mapc #'(lambda (object)
+		       (format stream " ")
+		       (post~print-declaration object stream))
+		   (rest object-list)))))
 
-#{The following function provides specialized error handling while parsing  \post\ expressions. It is used exactly like the \commonlisp\ {\vb error} function.#}
+#{The following function provides specialized error handling while parsing  {\post} expressions. It is used exactly
+like the {\commonlisp} {\vb error} function.#}
 
 
 (defun post~error (error-string &rest args)
@@ -335,8 +337,40 @@ a note that this was a POST error.")
 	  ((null object) (post~read-object nil env name))
 	  (t (error "No environment defined with name ~A." name)))))
 
+;;; test
 
 
+(defun post~all-types-checker (list-of-symbols &key (forbidden nil))
+  (declare (edited  "26-NOV-1998")
+	   (authors Ameier)
+	   (input   "A list of recursive listed symbols.")
+	   (effect  "NOne.")
+	   (value   "If flag forbidden is nil:"
+		    "T the symbol all-types is at most used only as first symbol in the top-list"
+		    "(if the first thing in the top-list is a symbol at all) and nowhere else."
+		    "Otherwise nil."
+		    "If flag forbidden is t:"
+		    "T if the symbol all-types isn't used, nil otherwise."))
+  (let* ((platte-string-liste (mapcar #'(lambda (sym) (format nil "~A" sym))
+				      (post=all-down-things list-of-symbols))))
+    (if (null forbidden)
+	(cond ((null (find "ALL-TYPES" platte-string-liste :test #'string=))
+	       't)
+	      ((null (find "ALL-TYPES" (rest platte-string-liste) :test #'string=))
+	       ;; -> NUR erstes Element ist ALL-TYPES
+	       (if (symbolp (first list-of-symbols))
+		   't
+		 nil))
+	      (t
+	       nil))
+      (null (find "ALL-TYPES" platte-string-liste :test #'string=)))))
 
-
-
+(defun post=all-down-things (liste)
+  (declare (edited  "26-NOV-1998")
+	   (authors Ameier)
+	   (input   "A list of possibly lists.")
+	   (effect  "None.")
+	   (value   "A list of all things in all down lists in the right order."))  
+  (if (listp liste)
+      (apply 'append (mapcar #'post=all-down-things liste))
+    (list liste)))

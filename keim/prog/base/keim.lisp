@@ -67,21 +67,38 @@ method definition, {\vb KEIM~EQUAL} defaults to {\vb EQ} #}
 	   (effect  "None.")
 	   (value   "True, iff the two objects are equal."))
   (:method (object1 object2)
-   (eq object1 object2))
+	   (eq object1 object2))
   (:method ((keim-object1 keim+object) (keim-object2 keim+object))
-   (eq keim-object1 keim-object2))
+	   (eq keim-object1 keim-object2))
+  (:method  ((object1 cons) (object2 cons))
+	    (and (keim~equal (car object1) (car object2))
+		 (keim~equal (cdr object1) (cdr object2))))
   (:method ((termlist1 list) (termlist2 list))
-   (and (= (length termlist1) (length termlist2))
-	(every #'keim~equal termlist1 termlist2))))
+	   (and (= (length termlist1) (length termlist2))
+		(every #'keim~equal termlist1 termlist2)))
+  (:method ((object1 string) (object2 string))
+	   (string= object1 object2)))
 
-(defgeneric keim~copy (keim-object)
+;;;inserted on behalf of Armin's observation;   DEF:
+
+(defmethod keim~equal :around (ob1 ob2)
+  (if (equal (type-of ob1) (type-of ob2))
+      (call-next-method)))
+
+(defgeneric keim~copy (keim-object &key explode share preserve downto)
   (declare (edited  "06-DEC-1991 12:54")
-	   (authors RICHTS)
+	   (authors RICHTS AMEIER)
 	   (input   "A object.")
 	   (effect  "None.")
 	   (value   "A copy of KEIM-OBJECT."))
-  (:method ((termlist list))
-   (mapcar #'keim~copy termlist)))
+  (:method ((termlist list) &key (explode :all-classes) share preserve downto)
+	   (mapcar #'(lambda (item)
+		       (keim~copy item
+				  :explode explode
+				  :share share
+				  :preserve preserve
+				  :downto downto))
+		   termlist)))
 
 #{\keim\ names can be strings or symbols, but symbols are always preferable, since the case conflicts do not
 arise.#}
